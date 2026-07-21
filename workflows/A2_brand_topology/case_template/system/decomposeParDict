@@ -1,0 +1,17 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  CFDPredict A2 - decomposeParDict (template)
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      decomposeParDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+numberOfSubdomains  8;
+method              scotch;
+
+// ************************************************************************* //

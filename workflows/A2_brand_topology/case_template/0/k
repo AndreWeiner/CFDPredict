@@ -1,0 +1,47 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  CFDPredict A2 - 0/k (template)
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      k;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform @K_INIT@;
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform @K_INIT@;
+    }
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform @K_INIT@;
+        value           uniform @K_INIT@;
+    }
+    walls
+    {
+        type            kqRWallFunction;
+        value           uniform @K_INIT@;
+    }
+    "vane.*"
+    {
+        type            kqRWallFunction;
+        value           uniform @K_INIT@;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,6 @@
+# Runtime dependencies for the A2_leitbleche worker (Mother-Topologie).
+#
+# Same shape as A2_brand_topology -- matplotlib only at runtime. See the
+# repo's SYSTEM_REQUIREMENTS.md for OS / OpenFOAM / ParaView details.
+
+matplotlib >= 3.7

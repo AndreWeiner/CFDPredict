@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+set -e
+mkdir -p logs
+
+blockMesh > logs/blockMesh.log 2>&1
+
+if [ -f system/topoSetDict ]; then
+    topoSet > logs/topoSet.log 2>&1
+fi
+
+if [ -f system/createBafflesDict ]; then
+    # createBaffles overwrites BCs of new patches with "type calculated"
+    # regardless of the dict's fields setting. Shelve 0/ around the call so
+    # our explicit per-vane wall BCs (set by build_case.py) survive.
+    mv 0 0.shelved
+    createBaffles -overwrite > logs/createBaffles.log 2>&1
+    mv 0.shelved 0
+fi
+
+# refineWallLayer: deterministic alternative to snappy addLayers — splits the
+# wall-adjacent cell at the given fraction. CLI-driven, no dict. Substituted by
+# build_case.py from params.n_layer_splits / params.layer_thickness (0 = off).
+N_LAYER_SPLITS=@N_LAYER_SPLITS@
+if [ "$N_LAYER_SPLITS" -gt 0 ]; then
+    for i in $(seq 1 "$N_LAYER_SPLITS"); do
+        refineWallLayer '@LAYER_PATCHES@' @LAYER_THICKNESS@ -overwrite \
+            > "logs/refineWallLayer_${i}.log" 2>&1
+    done
+fi
+
+checkMesh > logs/checkMesh.log 2>&1
+
+# potentialFoam: divergenzfreies Startfeld, damit simpleFoam auf den feinen
+# y+~1-Gittern nicht aus dem uniformen IC aufblaest. Harmlos fuer grobe Gitter.
+potentialFoam -initialiseUBCs > logs/potentialFoam.log 2>&1 || true
+
+# MESH ONLY. The streamlit worker (py_A2_brand_topology.py) runs the solver
+# itself via py_OF_utils.run_solver_copy_progress() so the RunGui
+# logfile_observer can render live residual / functionObject (probe) charts
+# into logs/to_plot/. (decomposePar + simpleFoam -parallel + reconstructPar
+# happen there.)
+echo "done — mesh built; solver is launched by the streamlit worker"

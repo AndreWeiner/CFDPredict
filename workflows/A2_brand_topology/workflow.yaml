@@ -1,0 +1,13 @@
+title: "A2 Brand Topology -- parallel-translated 90deg bend with full-height vanes"
+description: "CFDPredict A2-Variante mit Brand-treuer Topologie: parallel-translatierte Bogenwaende, voll-hohe Leitbleche, durchgaengige Lanes zwischen Inlet und Outlet. Konfiguriere R/H, Re, Anzahl Bleche, Trail-Laenge und Mesh-Aufloesung im Browser; Einzel-Case oder Anzahl-Sweep. Ergebnis: kinematischer Druckverlust dP, Outlet-Vorticity und Uniformity der simpleFoam-k-omega-SST-Loesung. Visualisierungs-/Parameterstudien-Variante zu zetaBrand (siehe Repo applications/A2_leitbleche/brand_topology/README.md)."
+entry_script: py_A2_brand_topology.py
+python_exec: ""
+input_filename: interface.json
+schema_file: interface.json
+inject_schema: true
+version: v2512
+uploads: false
+
+# Soft-lock: warnt (Override-Checkbox noetig), wenn dieser User schon so viele
+# laufende Jobs dieses Workflows hat. 0 = aus. Admins ignorieren.
+max_concurrent_per_user: 1

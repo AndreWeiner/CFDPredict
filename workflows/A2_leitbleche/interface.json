@@ -1,0 +1,120 @@
+{
+  "project name": [
+    0, "20260527_A2_mother_demo", "string", "nameYourProject", null,
+    "Projektname. Wird zum Case-/Report-Ordner."
+  ],
+
+  "Geometry": [10, "", "separator", "", null, ""],
+  "channel height H [m]": [
+    11, "1.0", "float", ["1.0"], null,
+    "Kanalhoehe (Bezugsgroesse). Re = U*H/nu; U wird daraus abgeleitet. Fix lassen, wenn nicht zwingend noetig."
+  ],
+  "channel depth W [m]": [
+    12, "1.0", "float", ["1.0", "0.05"], null,
+    "Kanal-Tiefe in z (3D-Extrusion). nz=1 + W klein = quasi-2D mit empty-Patches (frontAndBack). nz>1 + W=H = vollwertige 3D-Variante."
+  ],
+  "bend center radius R [m]": [
+    13, "1.5", "float", ["0.75", "1.5", "3.0"], null,
+    "Krümmungsradius des Bogen-Mittelpunkts (R/H = 0.75 .. 3.0 sinnvoll, mind. >H/2 da sonst Innenrand singulaer)."
+  ],
+  "inlet length L_in [m]": [
+    14, "3.0", "float", ["3.0", "5.0"], null,
+    "Gerade Einlaufstrecke vor dem Bogen. 3*H reicht fuer voll entwickelte k-omega-SST-Profile."
+  ],
+  "outlet length L_out [m]": [
+    15, "5.0", "float", ["5.0", "10.0"], null,
+    "Gerade Auslaufstrecke nach dem Bogen. Muss >= max(vane_ext_i) sein, damit die Vane-Verlaengerungen drin Platz haben."
+  ],
+
+  "Guide vanes (Mutter-Topologie)": [20, "", "separator", "", null, ""],
+  "number of vanes": [
+    21, "3", "integer", "", null,
+    "Anzahl aktiver Bleche (1..3). Liest die ersten N der vane_r{i}/vane_ext{i}-Eintraege; spaetere werden ignoriert. 0 = leerer Bogen (Baseline). Mehr als 3 = interface.json um vane_r4/vane_ext4 erweitern."
+  ],
+  "vane_r1 [m]": [
+    22, "1.7", "float", ["1.7"], null,
+    "Radius des aeusseren (1.) Blechs. Muss in (R-H/2+eps, R+H/2-eps) liegen — bei R=1.5/H=1.0 also (1.001, 1.999). r1 > r2 > r3."
+  ],
+  "vane_r2 [m]": [
+    23, "1.5", "float", ["1.5"], null,
+    "Radius des mittleren Blechs."
+  ],
+  "vane_r3 [m]": [
+    24, "1.3", "float", ["1.3"], null,
+    "Radius des inneren Blechs."
+  ],
+  "vane_ext1 [m]": [
+    25, "0.0", "float", ["0.0", "0.5", "1.0"], null,
+    "Downstream-Verlaengerung des 1. Blechs in den Auslauf (parallel zur Auslaufwand). 0 = nur Bogen. Muss <= L_out sein."
+  ],
+  "vane_ext2 [m]": [
+    26, "0.0", "float", ["0.0", "0.5", "1.0"], null,
+    "Downstream-Verlaengerung des 2. Blechs."
+  ],
+  "vane_ext3 [m]": [
+    27, "0.0", "float", ["0.0", "0.5", "1.0"], null,
+    "Downstream-Verlaengerung des 3. Blechs."
+  ],
+
+  "Flow": [30, "", "separator", "", null, ""],
+  "Reynolds number": [
+    31, "1e5", "float", ["1e4", "1e5", "1e6"], null,
+    "Re = U*H/nu (Luft 20 C, nu=1.5e-5 m^2/s). Treibt die Stroemungsphysik. Einlassgeschwindigkeit U wird daraus abgeleitet."
+  ],
+  "turbulent intensity": [
+    32, "0.05", "float", ["0.05", "0.10"], null,
+    "Einlass-Turbulenzintensitaet TI fuer die k-omega-SST-BC (k = 1.5*(TI*U)^2)."
+  ],
+
+  "Mesh & wall treatment": [40, "", "separator", "", null, ""],
+  "cells inlet axial nx_in": [
+    41, "60", "integer", "", null,
+    "Zellen in axialer Richtung im Einlauf."
+  ],
+  "cells bend angular nx_bend": [
+    42, "80", "integer", "", null,
+    "Zellen in Winkelrichtung im Bogen (90 Grad)."
+  ],
+  "cells outlet axial nx_out": [
+    43, "100", "integer", "", null,
+    "Zellen in axialer Richtung im Auslauf."
+  ],
+  "cells across channel ny": [
+    44, "40", "integer", "", null,
+    "Zellen quer durch den Kanal (zwischen Innen- und Aussenwand). Wird auf die N+1 Radialbaender aufgeteilt (ny_per_band = ny // (N+1))."
+  ],
+  "cells in z (nz)": [
+    45, "20", "integer", "", null,
+    "Zellen in z-Richtung. 1 = quasi-2D mit frontAndBack-empty-Patch. >1 = 3D, frontAndBack wird in 'walls' integriert (no-slip)."
+  ],
+  "auto layers": [
+    46, "true", "string", ["true", "false"], null,
+    "true = n_layer_splits Re-adaptiv aus (Re, y+_target, ny) berechnen (Dresden-Konvention: y+ Re-unabhaengig konstant). false = festes n_layer_splits aus dem Feld unten."
+  ],
+  "y+ target": [
+    47, "40.0", "float", ["1.0", "40.0"], null,
+    "Ziel-y+ am ersten Zellzentrum (bei auto_layers=true). 40 = Wandfunktions-Regime (robust+billig). ~1 = wandaufgeloest (teurer)."
+  ],
+  "wall-layer splits": [
+    48, "0", "integer", "", null,
+    "Anzahl refineWallLayer-Passes (fixed, bei auto_layers=false). Jeder Pass halbiert die wandnaechste Zelle. ~4 fuer y+<10 bei Re=1e5/ny=40."
+  ],
+  "layer-split thickness fraction": [
+    49, "0.5", "float", ["0.3", "0.5"], null,
+    "Bruchteil der wandnaechsten Zelle, der bei jedem refineWallLayer-Split abgetrennt wird."
+  ],
+
+  "Reporting": [50, "", "separator", "", null, ""],
+  "number of processors": [
+    51, "4", "integer", "", null,
+    "MPI-Ranks fuer den Solver (decomposePar + mpirun -np N -parallel). Passend zu Maschine + Case-Groesse waehlen: kleine Demo-VM (~4 vCPU) -> <= 4; grosser HPC-Server (z.B. 128 Kerne) -> hoeher. Intern auf 1..128 begrenzt."
+  ],
+  "contact email": [
+    52, "", "string", "user@example.com", null,
+    "Auto-prefilled aus dem User-Account. Erhaelt die Job-Done-Mail + Download-Link."
+  ],
+  "comments": [
+    53, "", "text_area", 100, null,
+    "Optionale Freitext-Notizen fuer den Report."
+  ]
+}

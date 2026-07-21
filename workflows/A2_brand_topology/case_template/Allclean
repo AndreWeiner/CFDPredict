@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+rm -rf processor* postProcessing logs constant/polyMesh
+ls -d [1-9]* 2>/dev/null | xargs -r rm -rf

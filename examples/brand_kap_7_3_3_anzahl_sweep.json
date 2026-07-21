@@ -1,0 +1,26 @@
+{
+  "Reynolds number": 100000.0,
+  "_meta": {
+    "saved_at": "2026-05-26T11:30:00",
+    "workflow": "A2_brand_topology",
+    "brand_chapter": "7.3.3",
+    "brand_figures": ["7.17"],
+    "note": "Anzahl-Sweep equidistant verteilter Vanes (0 bis 12). 13 Cases inkl. leerer Kruemmer (N=0) als Referenz. Brand-Original-Geometrie (R/H=0.75, L_trail=0)."
+  },
+  "bend radius ratio R/H": 0.75,
+  "cells across inlet N_inlet": "16",
+  "cells in z (nz)": 4,
+  "channel depth W [m]": 1.0,
+  "channel height H [m]": 1.0,
+  "comments": "Brand Kap. 7.3.3 - Multi-Vane-Anzahl-Sweep nach Fig. 7.17. N equidistant verteilte Vanes (fractions i/(N+1)) fuer N=0..12. Erwartung: dP faellt mit steigender Vane-Anzahl, naehert sich asymptotisch dem Optimum. nz=4 fuer 2D-Mittelschnitt-Visualisierung.",
+  "contact email": "",
+  "inlet length [H]": 3.0,
+  "layer-split thickness fraction": 0.5,
+  "number of processors": 4,
+  "number of vanes": "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]",
+  "outlet length [H]": 5.0,
+  "project name": "20260526_brand_kap7_3_3_anzahl_sweep",
+  "trail length [H]": 0.0,
+  "turbulent intensity": 0.05,
+  "wall-layer splits": 2
+}

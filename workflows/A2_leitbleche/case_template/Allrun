@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+set -e
+mkdir -p logs
+
+blockMesh > logs/blockMesh.log 2>&1
+
+if [ -f system/topoSetDict ]; then
+    topoSet > logs/topoSet.log 2>&1
+fi
+
+if [ -f system/createBafflesDict ]; then
+    # createBaffles overwrites BCs of new patches with "type calculated"
+    # regardless of the dict's fields setting. Shelve 0/ around the call so
+    # our explicit per-vane wall BCs (set by build_case.py) survive.
+    mv 0 0.shelved
+    createBaffles -overwrite > logs/createBaffles.log 2>&1
+    mv 0.shelved 0
+fi
+
+# refineWallLayer: deterministic alternative to snappy addLayers — splits the
+# wall-adjacent cell at the given fraction. CLI-driven, no dict. Substituted by
+# build_case.py from params.n_layer_splits / params.layer_thickness (0 = off).
+N_LAYER_SPLITS=@N_LAYER_SPLITS@
+if [ "$N_LAYER_SPLITS" -gt 0 ]; then
+    for i in $(seq 1 "$N_LAYER_SPLITS"); do
+        refineWallLayer '@LAYER_PATCHES@' @LAYER_THICKNESS@ -overwrite \
+            > "logs/refineWallLayer_${i}.log" 2>&1
+    done
+fi
+
+checkMesh > logs/checkMesh.log 2>&1
+
+# Detect parallel intent from decomposeParDict (nSubdomains > 1 -> parallel).
+# potentialFoam und simpleFoam laufen gemeinsam parallel: einmal zerlegen,
+# beide -parallel laufen lassen, am Ende einmal rekonstruieren. Auf den
+# re-adaptiven y+~1-Gittern spart das viele Minuten gegenueber seriellem
+# potentialFoam vor dem Decompose.
+N_PROCS=$(grep -E '^numberOfSubdomains' system/decomposeParDict | awk '{print $2}' | tr -d ';' )
+if [ -n "$N_PROCS" ] && [ "$N_PROCS" -gt 1 ]; then
+    decomposePar -force > logs/decomposePar.log 2>&1
+    mpirun -np "$N_PROCS" potentialFoam -parallel -initialiseUBCs \
+        > logs/potentialFoam.log 2>&1 || true
+    mpirun -np "$N_PROCS" simpleFoam -parallel > logs/solver.log 2>&1
+    reconstructPar -latestTime > logs/reconstructPar.log 2>&1
+    rm -rf processor*
+else
+    # potentialFoam: divergenzfreies Startfeld, damit simpleFoam auf den feinen
+    # y+~1-Gittern nicht aus dem uniformen IC aufblaest. Harmlos fuer grobe Gitter.
+    potentialFoam -initialiseUBCs > logs/potentialFoam.log 2>&1 || true
+    simpleFoam > logs/solver.log 2>&1
+fi
+
+echo "done — see logs/solver.log for residuals, postProcessing/ for patch averages"
