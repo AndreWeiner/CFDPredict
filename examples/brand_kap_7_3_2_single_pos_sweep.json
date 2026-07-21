@@ -1,0 +1,26 @@
+{
+  "Reynolds number": 100000.0,
+  "_meta": {
+    "saved_at": "2026-05-26T11:30:00",
+    "workflow": "A2_brand_topology",
+    "brand_chapter": "7.3.2",
+    "brand_figures": ["7.14", "7.15", "7.16"],
+    "note": "Single-Vane-Positions-Sweep ueber Brand Fig. 7.14. 6 Cases (je 1 Vane) + impliziter Baseline-Bezug; Brand-Pos N = (N+1)*100 mm Abstand zur Innenwand bei H_phys=4 m (Workflow-Konvention, Brand 2020 S. 114)."
+  },
+  "bend radius ratio R/H": 0.75,
+  "cells across inlet N_inlet": "16",
+  "cells in z (nz)": 4,
+  "channel depth W [m]": 1.0,
+  "channel height H [m]": 1.0,
+  "comments": "Brand Kap. 7.3.2 - Single-Vane-Positions-Sweep nach Fig. 7.14. Vane-Positionen P1/P3/P5/P11/P19/P29 = 200/400/600/1200/2000/3000 mm Abstand Innenwand (Workflow-Konvention H_phys=4m). Erwartung Fig. 7.15: dP-Kurve faellt monoton mit wachsender Vane-Distanz zur Innenwand. nz=4 fuer 2D-Mittelschnitt-Visualisierung (Streamlines geplant).",
+  "contact email": "",
+  "inlet length [H]": 3.0,
+  "layer-split thickness fraction": 0.5,
+  "number of processors": 4,
+  "number of vanes": "P[1, 3, 5, 11, 19, 29]",
+  "outlet length [H]": 5.0,
+  "project name": "20260526_brand_kap7_3_2_single_pos_sweep",
+  "trail length [H]": 0.0,
+  "turbulent intensity": 0.05,
+  "wall-layer splits": 2
+}

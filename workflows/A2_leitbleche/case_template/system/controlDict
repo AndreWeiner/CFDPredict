@@ -1,0 +1,122 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM                                        |
+|  \\    /   O peration     | CFDPredict A2 - controlDict (template)          |
+|   \\  /    A nd           |                                                 |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     simpleFoam;
+
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         5000;
+deltaT          1;
+
+writeControl    timeStep;
+writeInterval   500;
+purgeWrite      2;
+
+writeFormat     ascii;
+writePrecision  7;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable true;
+
+functions
+{
+    inletPressure
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   50;
+        log             true;
+        writeFields     false;
+        regionType      patch;
+        name            inlet;
+        operation       areaAverage;
+        fields          (p);
+    }
+    outletPressure
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   50;
+        log             true;
+        writeFields     false;
+        regionType      patch;
+        name            outlet;
+        operation       areaAverage;
+        fields          (p);
+    }
+    vorticityField
+    {
+        type            vorticity;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+        writeFields     true;
+    }
+    vorticityMag
+    {
+        type            mag;
+        libs            ("libfieldFunctionObjects.so");
+        field           vorticity;
+        result          magVorticity;
+        writeControl    writeTime;
+    }
+    outletVorticity
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   50;
+        log             true;
+        writeFields     false;
+        regionType      patch;
+        name            outlet;
+        operation       areaAverage;
+        fields          (magVorticity);
+    }
+    outletUniformity
+    {
+        // Area-weighted uniformity index gamma on the outlet velocity field:
+        //   gamma = 1 - sum(|U_i - U_avg| * A_i) / (2 * |U_avg| * sum(A_i))
+        // 1.0 = perfectly uniform, 0 = highly non-uniform. Engineering-relevant
+        // metric: what a downstream component (propeller, heat exchanger, sensor)
+        // sees. See project memory feedback / objectives notes for context.
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   50;
+        log             true;
+        writeFields     false;
+        regionType      patch;
+        name            outlet;
+        operation       uniformity;
+        fields          (U);
+    }
+    yPlus
+    {
+        type            yPlus;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+        log             true;
+    }
+}
+
+// ************************************************************************* //

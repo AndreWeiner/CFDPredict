@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH --job-name=a2_leitbleche
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=2
+#SBATCH --time=00:30:00
+#SBATCH --partition=debug
+#
+# Reference wrapper — verified on a 2-node Slurm test cluster (DHCAE sandbox).
+# The DHCAE workflow runs UNCHANGED: its hard-coded `mpirun -np N simpleFoam
+# -parallel` is picked up by the Slurm allocation because the system OpenMPI is
+# built `--with-slurm`. No `srun`/PMIx changes and no edits to run_workflow.py /
+# Allrun are required. Requirement: mpirun runs INSIDE the sbatch/salloc allocation.
+#
+# Adjust --nodes / --ntasks-per-node to the case's processor count (here 4 = 2x2),
+# the partition name, and the OpenFOAM bashrc path for your cluster.
+
+# Point at this cluster's OpenFOAM v2512 bashrc:
+export STREAMLIT_OPENFOAM_BASHRC=/usr/lib/openfoam/openfoam2512/etc/bashrc
+
+cd "$SLURM_SUBMIT_DIR"
+python3 tools/run_workflow.py A2_leitbleche \
+        examples/mother_default_3vane.json --name realA --timeout 1800

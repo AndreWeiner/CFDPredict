@@ -1,0 +1,18 @@
+# Runtime dependencies for the A2_brand_topology worker.
+#
+# The Streamlit portal supplies these globally; this file exists for
+# stand-alone use (Dresden Bayes-loop driver, RunGui-next, CI smoke
+# tests, etc.).
+#
+# Install with:  pip install -r requirements.txt
+#
+# What's NOT here:
+#   - OpenFOAM (ESI v2512 or compatible) -- system install, see
+#     SYSTEM_REQUIREMENTS.md.
+#   - ParaView pvbatch -- required only for the optional visualisation
+#     pipeline (pv_meshView / pv_streamlines / pv_3slice_iso). Cluster
+#     compute-nodes don't need it.
+#   - PyYAML -- not used at runtime; the tools/ CLI parses workflow.yaml
+#     with a tiny built-in flat parser.
+
+matplotlib >= 3.7

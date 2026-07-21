@@ -1,0 +1,85 @@
+{
+  "project name": [
+    0, "20260524_brandTopology_demo", "string", "nameYourProject", null,
+    "Projektname. Wird zum Case-/Report-Ordner."
+  ],
+
+  "Geometry": [10, "", "separator", "", null, ""],
+  "bend radius ratio R/H": [
+    11, "0.75", "float", ["0.75", "1.5", "2.0", "3.0"], null,
+    "Kruemmungsradius / Kanalhoehe. R/H=0.75 reproduziert Brand 2020 (S. 114: Innen-/Aussen-Verrundungsradius = 1 m bei Windkanal-Seitenlaenge 4 m -> r_bend = R-H/2 = 0.25 H; bei H=1 also R=0.75). R/H=1.5/2.0/3.0 sind weichere Boegen. Achtung: R/H=1.5 + r_bend tight-fit kann zu Block-Degenerierung fuehren; siehe applications/A2_leitbleche/brand_topology/handoff.md."
+  ],
+  "channel height H [m]": [
+    12, "1.0", "float", ["1.0", "0.1"], null,
+    "Kanalhoehe (Bezugsgroesse). Re = U*H/nu; U wird daraus abgeleitet."
+  ],
+  "channel depth W [m]": [
+    13, "1.0", "float", ["1.0", "0.1"], null,
+    "Kanal-Tiefe in z (3D-Extrusion). Endliche Tiefe (nz > 1) erforderlich, da der brand_topology-Generator aktuell kein 2D-empty-Patch implementiert."
+  ],
+  "inlet length [H]": [
+    14, "3.0", "float", ["3.0", "5.0"], null,
+    "Gerade Einlauflaenge vor dem Bogen, in Kanalhoehen H."
+  ],
+  "outlet length [H]": [
+    15, "5.0", "float", ["5.0", "10.0"], null,
+    "Gerade Auslauflaenge nach dem Bogen, in H."
+  ],
+  "trail length [H]": [
+    16, "0.0", "float", ["0.0", "0.125", "0.5", "1.5"], null,
+    "Trail-Block (Uebergangszone) nach dem Bogen, in H. 0 = Brand-Originalfall (kein Trail). 0.125 = Brand 'modifizierte Leitbleche' (S. 118: 500 mm Verlaengerung bei H_phys=4 m, Fig. 7.20/7.21). 0 <= trail <= outlet. Die Vanes werden im Trail-Block als parallele gerade Strecken fortgesetzt."
+  ],
+
+  "Flow": [20, "", "separator", "", null, ""],
+  "Reynolds number": [
+    21, "1e5", "float", ["1e4", "1e5", "1e6"], null,
+    "Re = U*H/nu (Luft 20 C, nu=1.5e-5 m^2/s). Treibt die Stroemungsphysik; Einlassgeschwindigkeit U wird abgeleitet."
+  ],
+  "turbulent intensity": [
+    22, "0.05", "float", ["0.05", "0.10"], null,
+    "Einlass-Turbulenzintensitaet TI fuer die k-omega-SST-BC (k = 1.5*(TI*U)^2)."
+  ],
+
+  "Guide vanes": [30, "", "separator", "", null, ""],
+  "number of vanes": [
+    31, "3", "string",
+    ["3", "[0, 3, 5, 7, 11]", "0",
+     "[0.025, 0.050, 0.075, 0.100, 0.125]",
+     "P11", "P[1, 5, 11, 19, 29]",
+     "P[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29]"],
+    null,
+    "Drei Eingabemodi (Detektion ueber Werte-Typ + Praefix):\n(1) INTEGER-ANZAHL => equidistante Bleche an Pathline-Bruchteilen i/(N+1). Einzelzahl = 1 Case; Liste wie [0, 3, 5] = SERIE (Anzahl-Sweep, Brand Fig. 7.17). 0 = leerer Kruemmer.\n(2) FLOAT-LISTE in (0,1) => explizite Bruchteile, EIN Case mit den genannten Pathline-Positionen (0=innen, 1=aussen). Beispiel Brand Fig. 7.18 mit 7 Bleche: [0.025, 0.050, 0.075, 0.100, 0.125] entspricht equidistanten Pos 0/1/2/3/4 (alle eng an der Innenwand). Fuer korrekte Brand-Konvention besser Praefix 'P' nutzen (Modus 3).\n(3) BRAND-POS Praefix 'P' => Position(en) als Brand-Pos-Index (Pos N = (N+1)*100 mm Abstand zur Innenwand bei H_phys=4 m, d.h. fraction = (N+1)/40). 'P11' = 1 Case, ein Vane an Pos 11 (1200 mm). 'P[1, 5, 11, 19, 29]' = SERIE (1 Case pro Eintrag, jeweils 1 Vane) -- Brand Fig. 7.14/7.15 Single-Vane-Positions-Sweep. Mehrere Pos in einer einzelnen Liste ohne Praefix-Wiederholung erlaubt."
+  ],
+
+  "Mesh & wall treatment": [40, "", "separator", "", null, ""],
+  "cells across inlet N_inlet": [
+    41, "16", "string", ["12", "16", "20", "[12, 16, 20]"], null,
+    "Zellen quer zum Kanal am Inlet (= ny). Einzelzahl = ein Case; Liste = SERIE -> Gitterkonvergenz. Andere Richtungen sind aus cell_size=H/N_inlet abgeleitet (annaehernd wuerfelfoermig)."
+  ],
+  "cells in z (nz)": [
+    42, "8", "integer", "", null,
+    "Zellen in z-Richtung. Muss >= 2 sein (2D-Modus mit nz=1 ist im jetzigen Generator nicht implementiert -- siehe handoff.md). Klein halten fuer schnelle Demo-Laeufe."
+  ],
+  "wall-layer splits": [
+    43, "0", "integer", "", null,
+    "Anzahl refineWallLayer-Splits an Waenden + Blechen (0 = aus). Jeder Split halbiert die wandnaechste Zellhoehe. Bei Re=1e5 + y+~150 zwei Splits genuegend fuer y+~40."
+  ],
+  "layer-split thickness fraction": [
+    44, "0.5", "float", ["0.3", "0.5"], null,
+    "Bruchteil der wandnaechsten Zelle, der bei jedem refineWallLayer-Split abgetrennt wird."
+  ],
+  "number of processors": [
+    45, "2", "integer", "", null,
+    "MPI-Ranks fuer den Solver (decomposePar -> mpirun -np N -parallel). Passend zu Maschine UND Case-Groesse waehlen: kleine Demo-VM (~4 vCPU) -> <= 4; grosser HPC-Server (z.B. 128 Kerne) -> hoeher. Intern auf 1..128 begrenzt."
+  ],
+
+  "Reporting": [50, "", "separator", "", null, ""],
+  "contact email": [
+    51, "", "string", "user@example.com", null,
+    "Auto-prefilled aus dem User-Account. Erhaelt die Job-Done-Mail + Download-Link."
+  ],
+  "comments": [
+    52, "", "text_area", 100, null,
+    "Optionale Freitext-Notizen fuer den Report."
+  ]
+}

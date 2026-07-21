@@ -1,0 +1,26 @@
+{
+  "Reynolds number": 100000.0,
+  "_meta": {
+    "saved_at": "2026-05-26T11:30:00",
+    "workflow": "A2_brand_topology",
+    "brand_chapter": "7.3.4",
+    "brand_figures": ["7.20", "7.21"],
+    "note": "Anzahl-Sweep equidistant verteilter MODIFIZIERTER Vanes (Trail-Verlaengerung 500 mm = 0.125 H bei H_phys=4 m, Brand S. 118)."
+  },
+  "bend radius ratio R/H": 0.75,
+  "cells across inlet N_inlet": "16",
+  "cells in z (nz)": 4,
+  "channel depth W [m]": 1.0,
+  "channel height H [m]": 1.0,
+  "comments": "Brand Kap. 7.3.4 - 'Modifizierte Leitbleche' nach Fig. 7.20/7.21. Gleicher Anzahl-Sweep wie 7.3.3, ABER mit Trail-Verlaengerung der Vanes um 500 mm = 0.125 H (Brand S. 118). Vanes setzen sich nach dem Bogen-Ende als parallele Strecken im Trail-Block fort. Erwartung: weitere dP-Reduktion gegenueber Kap. 7.3.3.",
+  "contact email": "",
+  "inlet length [H]": 3.0,
+  "layer-split thickness fraction": 0.5,
+  "number of processors": 4,
+  "number of vanes": "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]",
+  "outlet length [H]": 5.0,
+  "project name": "20260526_brand_kap7_3_4_modifizierte_bleche",
+  "trail length [H]": 0.125,
+  "turbulent intensity": 0.05,
+  "wall-layer splits": 2
+}

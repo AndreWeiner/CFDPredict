@@ -1,0 +1,13 @@
+title: "A2 Leitbleche -- Mother-Topologie (konzentrische Vanes)"
+description: "CFDPredict A2-Mutter mit konzentrischen Leitblechen um einen gemeinsamen Bogenmittelpunkt. Bayes-/ROM-tauglich (R^(2*N_max) Inputraum: pro Blech vane_r + vane_ext, kontinuierliche Deaktivierung). 2D oder 3D; auto-Layers fuer Re-unabhaengiges y+. Zielgroessen aus dem simpleFoam-k-omega-SST-Lauf: Druckverlust dP_kin, Outlet-Vorticity omega, Outlet-Uniformity gamma."
+entry_script: py_A2_leitbleche.py
+python_exec: /usr/bin/python3
+input_filename: interface.json
+schema_file: interface.json
+inject_schema: true
+version: v2512
+uploads: false
+
+# Soft-lock: warnt (Override-Checkbox noetig), wenn dieser User schon so viele
+# laufende Jobs dieses Workflows hat. 0 = aus. Admins ignorieren.
+max_concurrent_per_user: 1

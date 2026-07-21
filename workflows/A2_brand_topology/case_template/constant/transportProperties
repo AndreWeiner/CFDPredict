@@ -1,0 +1,18 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  CFDPredict A2 - transportProperties (template)
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      transportProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+transportModel  Newtonian;
+
+nu              @NU@;
+
+// ************************************************************************* //
