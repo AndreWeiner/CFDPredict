@@ -23,7 +23,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from gen_blockmesh import ElbowGeometry, _vanes_sorted, HEADER as _BM_HEADER
+try:      # package form (see __init__.py); flat script dir falls back below
+    from .gen_blockmesh import ElbowGeometry, _vanes_sorted, HEADER as _BM_HEADER
+except ImportError:
+    from gen_blockmesh import ElbowGeometry, _vanes_sorted, HEADER as _BM_HEADER
 
 
 def _header(obj: str, generator: str) -> str:

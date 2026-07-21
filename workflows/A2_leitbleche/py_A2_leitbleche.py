@@ -34,16 +34,29 @@ import subprocess
 import sys
 from pathlib import Path
 
-import foam_dictionary
-import py_OF_utils
-from py_OF_utils import (touch, run_OF_utility, run_solver_copy_progress,
-                         clean_processor_directories, get_latestTime,
-                         run_pvbatch_utility)
+try:      # package form (see __init__.py); flat script dir falls back below
+    from . import foam_dictionary
+    from . import py_OF_utils
+    from .py_OF_utils import (touch, run_OF_utility, run_solver_copy_progress,
+                             clean_processor_directories, get_latestTime,
+                             run_pvbatch_utility)
+except ImportError:
+    import foam_dictionary
+    import py_OF_utils
+    from py_OF_utils import (touch, run_OF_utility, run_solver_copy_progress,
+                             clean_processor_directories, get_latestTime,
+                             run_pvbatch_utility)
 
-from gen_blockmesh import ElbowGeometry
-from build_case import build as build_case
-from params import FlowParams
-from wall_resolution import layer_splits_for_Re, predicted_yplus
+try:      # package form (see __init__.py); flat script dir falls back below
+    from .gen_blockmesh import ElbowGeometry
+    from .build_case import build as build_case
+    from .params import FlowParams
+    from .wall_resolution import layer_splits_for_Re, predicted_yplus
+except ImportError:
+    from gen_blockmesh import ElbowGeometry
+    from build_case import build as build_case
+    from params import FlowParams
+    from wall_resolution import layer_splits_for_Re, predicted_yplus
 
 
 # ---------------------------------------------------------------------------

@@ -21,11 +21,18 @@ import shutil
 import stat
 from pathlib import Path
 
-from gen_blockmesh import ElbowGeometry, render as render_blockmesh
-from gen_createbaffles import render as render_createbaffles, render_toposet
-from gen_refine_layer import render_patch_arg as render_layer_patches
-import params
-from params import FlowParams
+try:      # package form (see __init__.py); flat script dir falls back below
+    from .gen_blockmesh import ElbowGeometry, render as render_blockmesh
+    from .gen_createbaffles import render as render_createbaffles, render_toposet
+    from .gen_refine_layer import render_patch_arg as render_layer_patches
+    from . import params
+    from .params import FlowParams
+except ImportError:
+    from gen_blockmesh import ElbowGeometry, render as render_blockmesh
+    from gen_createbaffles import render as render_createbaffles, render_toposet
+    from gen_refine_layer import render_patch_arg as render_layer_patches
+    import params
+    from params import FlowParams
 
 
 DEFAULT_PARAMS = Path(__file__).parent / "params.json"

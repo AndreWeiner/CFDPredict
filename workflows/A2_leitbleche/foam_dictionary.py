@@ -5,7 +5,10 @@ Created on Oct 13, 2012
 '''
 from __future__ import print_function
 from __future__ import absolute_import
-import utils
+try:      # package form (see __init__.py); flat script dir falls back below
+    from . import utils
+except ImportError:
+    import utils
 
 def switch_name_and_position(the_dict):
     '''

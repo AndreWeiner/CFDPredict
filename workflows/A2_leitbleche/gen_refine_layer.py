@@ -19,7 +19,10 @@ from __future__ import annotations
 
 import argparse
 
-from gen_blockmesh import ElbowGeometry
+try:      # package form (see __init__.py); flat script dir falls back below
+    from .gen_blockmesh import ElbowGeometry
+except ImportError:
+    from gen_blockmesh import ElbowGeometry
 
 
 def patches_for(g: ElbowGeometry) -> list[str]:

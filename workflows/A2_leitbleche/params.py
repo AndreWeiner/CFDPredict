@@ -15,7 +15,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from gen_blockmesh import ElbowGeometry
+try:      # package form (see __init__.py); flat script dir falls back below
+    from .gen_blockmesh import ElbowGeometry
+except ImportError:
+    from gen_blockmesh import ElbowGeometry
 
 
 @dataclass
