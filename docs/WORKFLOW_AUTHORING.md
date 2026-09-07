@@ -145,6 +145,10 @@ the download-link helper picks them up.
 
 ## 5. End-to-end checklist for a new workflow
 
+> Replicating a published benchmark? Read `PAPER_REPLICATION_TEMPLATE.md`
+> first -- it adds the paper-specific files (errata notes, digitized
+> reference, methods matrix, report) and the lessons from two full runs.
+
 - [ ] Pick a short, lowercase name (`myWorkflow`)
 - [ ] Create `workflows/myWorkflow/` with `workflow.yaml` and `interface.json`
 - [ ] Write `py_myWorkflow.py` that follows the worker contract above

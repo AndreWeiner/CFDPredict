@@ -1,0 +1,50 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           volScalarField;
+    location        "0";
+    object          epsilon;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Mixing length L = 0.07 * Di = 0.07 * 2mm = 1.4e-4 m.
+// Mit Lesson 041 (k=0.051 statt 1.28) waere epsilon = Cmu^0.75 * k^1.5 / L =
+// 0.09^0.75 * 0.051^1.5 / 1.4e-4 = 6.7 m^2/s^3. internalField bleibt 1700
+// (Solver-Equilibrium nach ~1ms); inlet-Wert wird von turbulentMixingLength-BC
+// automatisch aus aktuellem k berechnet, internalField-Vorgabe unkritisch.
+dimensions      [0 2 -3 0 0 0 0];
+internalField   uniform 1700;
+
+boundaryField
+{
+    inlet
+    {
+        type            turbulentMixingLengthDissipationRateInlet;
+        mixingLength    1.4e-4;          // 0.07 * Di (Di = 2 mm)
+        value           uniform 6.7;     // berechnet aus k=0.051 + L=1.4e-4
+    }
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform 1700;
+        value           uniform 1700;
+    }
+    lexit_side
+    {
+        type            inletOutlet;
+        inletValue      uniform 1700;
+        value           uniform 1700;
+    }
+    wall          { type epsilonWallFunction; value uniform 1700; }
+    chamberBottom { type epsilonWallFunction; value uniform 1700; }
+}
+
+// ************************************************************************* //

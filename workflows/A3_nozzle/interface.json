@@ -1,0 +1,141 @@
+{
+  "project name": [
+    0, "A3_nozzle_zhang_baseline", "string", "nameYourProject", null,
+    "Projektname. Wird zum Case-/Report-Ordner."
+  ],
+
+  "DOE code (optional, e.g. A4B1C2D4)": [
+    5, "", "string", ["", "A4B1C2D4", "A1B2C2D2"], null,
+    "Zhang L16-DOE-Kurzcode A_iB_jC_kD_l (Paper Sektion 4.3). Wenn gesetzt, ueberschreibt er die A/B/C/D-Werte unten. A=Expansionswinkel 0/10/20/30 deg (-> R_exit am Auslass), B=Do 4/5/6/7 mm, C=Kontraktionswinkel alpha 30/45/60/75 deg, D=Ds 9/10/11/12 mm. Leer lassen = die A/B/C/D-Felder unten gelten direkt. A4B1C2D4 = Zhang-Optimum (SMD 40.52 um)."
+  ],
+
+  "DOE main parameters (Zhang L16)": [10, "", "separator", "", null, ""],
+  "A - theta [deg]": [
+    11, "0.0", "float", ["0.0", "10.0", "20.0", "30.0", "45.0"], null,
+    "[DOE-A : expansion] Expansions-Halbwinkel theta [deg]. theta=0 = gerade Bohrung (Zhang A1 baseline, R_exit=Do/2). A2=10, A3=20, A4=30. 45 ist der Martin-Lampenschirm-Default (~R_exit=5.0 mm bei Do=5/Lk=6). R_exit am Auslass wird intern berechnet: R_exit = Do/2 + Lk*tan(theta/2)."
+  ],
+  "B - Do [mm]": [
+    12, "5.0", "float", ["5.0", "4.0", "6.0", "7.0"], null,
+    "[DOE-B : orifice] Orifice-Durchmesser [mm] = primaere Laengenskala. Zhang-Baseline 5. Levels B1=4, B2=5, B3=6, B4=7."
+  ],
+  "C - alpha [deg]": [
+    13, "45.0", "float", ["45.0", "30.0", "60.0", "75.0"], null,
+    "[DOE-C : contraction] Kontraktions-Halbwinkel Ds->Do [deg]. Baseline 45. Levels C1=30, C2=45, C3=60, C4=75. Treibt die Kontraktionslaenge Lc = (Rs-Rw)*tan(alpha)."
+  ],
+  "D - Ds [mm]": [
+    14, "10.0", "float", ["10.0", "9.0", "11.0", "12.0"], null,
+    "[DOE-D : chamber] Drallkammer-Durchmesser [mm]. Zhang-Baseline 10. Levels D1=9, D2=10, D3=11, D4=12."
+  ],
+
+  "Show details": [
+    20, "compact", ["compact", "advanced"], "compact",
+    {
+      "compact": ["compactNotes", {}],
+      "advanced": ["advancedSettings", {
+
+        "Geometry (other Zhang Fig.1b dimensions)": [100, "", "separator", "", null, ""],
+        "Di [mm]": [
+          110, "2.0", "float", ["2.0", "1.5", "2.5"], null,
+          "Durchmesser der (runden) Tangentialeinlaesse [mm]. Zhang-Baseline 2.0."
+        ],
+        "Ls [mm]": [
+          120, "6.0", "float", ["6.0"], null,
+          "Drallkammer-Laenge [mm]. Zhang-Baseline 6."
+        ],
+        "Lo [mm]": [
+          130, "20.0", "float", ["20.0"], null,
+          "Orifice-(Geradstueck-)Laenge [mm]. Baseline 20. Die Film-Messebene liegt bei ~0.95*Lo am Orifice-Austritt."
+        ],
+        "Lk [mm]": [
+          140, "6.0", "float", ["6.0", "5.0"], null,
+          "Expansions-Laenge [mm]. Baseline (User) 6 (Zhang 5). Treibt den Expansionswinkel zusammen mit theta (siehe oben)."
+        ],
+        "n_inlet": [
+          150, "4", "integer", "", null,
+          "Anzahl der Tangentialeinlaesse. Zhang-Baseline 4 (verifiziert). Werden per snappyHexMesh aus der Kammerwand gestanzt."
+        ],
+        "L_exit [mm]": [
+          160, "0.0", "float", ["0.0", "6.0"], null,
+          "Gerade nach der Expansion [mm]. NICHT im Zhang-Paper. Default 0 = paper-konform; 6 = Martin-User-Variante mit zusaetzlichem L4-Stueck."
+        ],
+
+        "Ambient domain (spray cone)": [200, "", "separator", "", null, ""],
+        "enable ambient (0/1)": [
+          210, "0", "integer", ["0", "1"], null,
+          "1 = stromabwaerts des Nozzle-Exits 2 zusaetzliche z-Stationen (frustum-Aufweitung des O-Grids in den Spray-Konus). 0 = klassische Innenstroemung (Film/Vordruck/U_theta only). Bei 1 sollte endTime >= 0.05 s sein."
+        ],
+        "L_amb [mm]": [
+          220, "30.0", "float", ["30.0", "20.0", "40.0"], null,
+          "Ambient-Laenge stromabwaerts des Nozzle-Exits [mm]. 30 = ~6*Do, deckt 25 mm Auswertelaenge ab. Nur wirksam wenn enable_ambient=1."
+        ],
+        "R_amb [mm]": [
+          230, "0.0", "float", ["0.0", "17.5", "25.0"], null,
+          "Ambient-Radius am Spray-Ausgang [mm]. 0 = AUTO aus spray_halfangle (Frustum deckt Spray-Cone + 5 deg Marge ab). 17.5 = legacy fixer Wert. Nur wirksam wenn enable_ambient=1."
+        ],
+        "spray_halfangle [deg]": [
+          240, "47.0", "float", ["47.0", "30.0", "60.0"], null,
+          "Halbwinkel des Sprueh-Cones [deg], steuert die Frustum-Aufweitung des Ambient-Meshes (R_amb wird automatisch berechnet). Zhang Tab.4 A1B2C2D2 baseline cone 94.4 deg -> halfangle 47."
+        ],
+        "TOPOLOGY": [
+          250, "auto", "string", ["auto", "v1", "v2"], null,
+          "Block-Topologie. auto = v2 wenn enable_ambient=1 (Lesson 103_PEGASUS); v1 ohne Ambient. v2 = Inner-O-Grid faechert frustum-artig auf (deutlich bessere Mesh-Qualitaet als v1)."
+        ],
+        "cone_half_angle [deg]": [
+          260, "40.0", "float", ["40.0", "47.0", "60.0"], null,
+          "Ring3-Frustum-Halbwinkel im Ambient [deg], nur TOPOLOGY=v2. 40 deg deckt Zhang-Baseline Spray + Marge knapp ab, validiert in 103_PEGASUS."
+        ],
+        "inner_amb_shrink": [
+          270, "0.9", "float", ["0.9", "0.85", "1.0"], null,
+          "Shrink-Faktor fuer Inner-O-Grid-Aussenrand (Ring2) im Ambient. 0.9 = ~10% nach innen ziehen, gibt Ring3 Pufferzone. Nur TOPOLOGY=v2."
+        ],
+
+        "Mesh resolution & BL": [300, "", "separator", "", null, ""],
+        "base cells over Do (N_Do)": [
+          310, "40", "integer", "", null,
+          "Basis-Zellen ueber dem Orifice-Durchmesser Do. Baseline 40 (~321k Zellen). Hoeher = feiner + teurer."
+        ],
+        "BL/film band cells (bl_cells)": [
+          320, "12", "integer", "", null,
+          "Gleichmaessige radiale Zellen im wandnahen BL-/Film-Band (Ring2). Baseline 12 -> loest den ~0.65mm-Film auf."
+        ],
+        "BL refinement passes (0..2)": [
+          330, "2", "integer", ["0", "1", "2"], null,
+          "Anzahl refineWallLayer-Passes auf der Bohrungswand. 0 = aus. 2 = Default (Lesson 038-v2). Splittet outerWall in wall_top (Buffer, NICHT refined) + wall_straight (REFINED) sowie wall in wall + wall_expansion (Lampenschirm, REFINED). Verhindert 48 negVol-Cells am chamberBottom-Uebergang."
+        ],
+        "Zhang outlet BCs (0/1)": [
+          340, "1", "integer", ["1", "0"], null,
+          "1 = Zhang-paper-konform (p_rgh outlet fixedValue 0 + alpha.water outlet inletOutlet 0). 0 = DHCAE non-reflecting. Lesson 029: Zhang-BCs liefern numerisch guenstigeres Setup. Default 1."
+        ],
+        "Disable prefill (0/1)": [
+          350, "1", "integer", ["1", "0"], null,
+          "1 = kein setFields-Prefill, alpha=0 ueberall, Aircore bildet sich natuerlich (Lesson 028). 0 = bore pre-filled (Cold-Start fuer kEps)."
+        ],
+
+        "Flow & run": [400, "", "separator", "", null, ""],
+        "inlet velocity [m/s]": [
+          410, "18.46", "float", ["18.46"], null,
+          "Einlassgeschwindigkeit (velocity-inlet, alpha=1 Wasser). Zhang-Baseline 18.46 m/s."
+        ],
+        "end time [s]": [
+          420, "0.025", "float", ["0.025", "0.012", "0.035", "0.050"], null,
+          "interFoam-Endzeit [s]. ~0.025 reicht fuer quasi-stationaeren Film + (annaehernd) konvergierten Vordruck. Mit Ambient: 0.050 (~ 30 mm Spray-Entwicklung)."
+        ],
+        "number of processors": [
+          430, "128", "integer", "", null,
+          "MPI-Ranks. VOF-Lauf ist schwer -> cfdtools (128 Kerne). Intern auf 1..128 begrenzt."
+        ]
+      }]
+    },
+    "compact = nur DOE-Hauptparameter A/B/C/D sichtbar (Geometrie-Details, Ambient, Mesh, BC + Flow auf Defaults). advanced = alle Detail-Toggles ausklappbar."
+  ],
+
+  "Reporting": [90, "", "separator", "", null, ""],
+  "contact email": [
+    91, "", "string", "user@example.com", null,
+    "Auto-prefilled aus dem User-Account. Erhaelt die Job-Done-Mail + Download-Link."
+  ],
+  "comments": [
+    92, "", "text_area", 100, null,
+    "Optionale Freitext-Notizen fuer den Report."
+  ]
+}

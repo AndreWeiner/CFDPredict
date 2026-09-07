@@ -1,0 +1,47 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  A3 prism interFoam - setFieldsDict
+  Pre-fill swirl chamber + orifice + expansion with water (alpha=1) to remove
+  the cold-start velocity spike that caused TKE/epsilon to explode at the
+  alpha-front. Cylinder uses the flipped-frame coords (solver frame):
+    swirl-chamber bottom (in flipped frame: TOP) at z = +(Lc+Ls) = +8.5 mm
+    exit-top                                    at z = -(Lo+Lk+L_exit) = -26 mm
+    fluid-radius along the bore: max(Rs, R_exit, R_wall) = Rs = 5 mm
+  Generous radius 5.1 mm + 0.1 mm z-margins keep ambient cells at alpha=0.
+  Inlet pipes (radial r > Rs) are not covered -- their cold-start is tiny vs
+  the chamber/orifice volume.
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+defaultFieldValues
+(
+    volScalarFieldValue alpha.water 0
+);
+
+regions
+(
+    // bore body: swirl-chamber + contraction + orifice + expansion
+    // Inlets bewusst NICHT prefilled (alpha=0 dort) -- ihr Luft-Buffer
+    // bricht den Druckschock von der scharfen Inlet-BC in die Kammer.
+    // v2 (Inlets prefilled) detonierte schon @ 88us mit eps -> 1e+14.
+    cylinderToCell
+    {
+        p1     (0 0 -0.0259);   // z = -25.9 mm, 0.1 mm above exit-top
+        p2     (0 0  0.0089);   // z = +8.9 mm,  0.4 mm below swirl-chamber bottom
+        radius 0.0051;          // 5.1 mm; covers Rs=5mm + tiny margin
+        fieldValues
+        (
+            volScalarFieldValue alpha.water 1
+        );
+    }
+);
+
+
+// ************************************************************************* //

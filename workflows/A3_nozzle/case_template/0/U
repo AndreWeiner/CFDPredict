@@ -1,0 +1,46 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           volVectorField;
+    location        "0";
+    object          U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Inlet: tangentiale Einleitung mit U=18.46 m/s (Zhang Section 2.2, velocity-inlet).
+// surfaceNormalFixedValue mit negativem Wert = inflow entlang INWARD patch normal
+// (Tangentialeinlass an der Drallkammerwand).
+
+dimensions      [0 1 -1 0 0 0 0];
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    inlet
+    {
+        type            surfaceNormalFixedValue;   // inflow along inward patch normal
+        refValue        uniform -18.46;
+    }
+    outlet
+    {
+        type            pressureInletOutletVelocity;
+        value           uniform (0 0 0);
+    }
+    lexit_side
+    {
+        type            pressureInletOutletVelocity;
+        value           uniform (0 0 0);
+    }
+    wall          { type noSlip; }
+    chamberBottom { type noSlip; }
+}
+
+// ************************************************************************* //

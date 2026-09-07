@@ -1,0 +1,44 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    location        "constant";
+    object          turbulenceProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Turbulenz-Modell (Lessons 029-048):
+//
+//   kEpsilon       - sehr robust, aber p_inlet etwas zu hoch (~+25%) und
+//                    Drall numerisch zu wenig erhalten. NUR als Fallback wenn
+//                    RNG instabil ist.
+//   RNGkEpsilon    - Zhang Paper-Modell. Plus multiphaseStabilizedTurbulence
+//                    fvOption + limitVelocity/limitTurbulenceViscosity stabil
+//                    (v3-Crash mit reinem RNG behoben durch diese Stabilisierer).
+//                    Liefert p_inlet +24% / Film -1% / U_θ -22% bei z=-24.9.
+//                    DEFAULT.
+//   kOmegaSST      - Beste U_θ-Erhaltung (-11% Zhang) aber hoechster p_inlet
+//                    (+34%). Benoetigt zusaetzlich `wallDist { method meshWave; }`
+//                    in system/fvSchemes. Cross-diffusion-Blending mid log-layer
+//                    ↔ near-wall behaelt Drall besser als RNG-Linearitaet.
+//   LES dynamicKEqn- niedrigster p_inlet (+15-16%) aller getesteten Modelle,
+//                    Film +7% mit BL refine (038). Drall mid (-13%). Wahl wenn
+//                    Druck-Genauigkeit > Effizienz.
+simulationType  RAS;
+
+RAS
+{
+    RASModel        RNGkEpsilon;
+    turbulence      on;
+    printCoeffs     on;
+}
+
+// ************************************************************************* //
