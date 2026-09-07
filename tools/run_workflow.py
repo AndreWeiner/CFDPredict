@@ -450,8 +450,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dry-build", action="store_true",
                     help="Build case dirs but don't source OpenFOAM and don't "
                          "run the solver. Useful for offline smoke tests on "
-                         "machines without OpenFOAM. Currently honoured by "
-                         "A2_brand_topology (env vars A2_DO_SOURCE_OF / A2_DO_RUN).")
+                         "machines without OpenFOAM. Honoured by "
+                         "A2_brand_topology (A2_DO_SOURCE_OF / A2_DO_RUN) and "
+                         "deVahlDavis (DVD_DO_SOURCE_OF / DVD_DO_RUN).")
     ap.add_argument("--list", action="store_true",
                     help="List discoverable workflows and exit.")
     args = ap.parse_args(argv)
@@ -479,7 +480,8 @@ def main(argv: list[str] | None = None) -> int:
     workdir = _make_workdir(args.workdir, args.name, args.workflow_name)
     extra_env = None
     if args.dry_build:
-        extra_env = {"A2_DO_SOURCE_OF": "0", "A2_DO_RUN": "0"}
+        extra_env = {"A2_DO_SOURCE_OF": "0", "A2_DO_RUN": "0",
+                     "DVD_DO_SOURCE_OF": "0", "DVD_DO_RUN": "0"}
     result = run_workflow_headless(
         args.workflow_name, settings, workdir,
         tail=(not args.no_tail), timeout_s=args.timeout,

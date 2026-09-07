@@ -1,0 +1,57 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  A3 prism interFoam - fvOptions
+  multiphaseStabilizedTurbulence: Larsen & Fuhrman (2018) + Devolder (2017)
+  k/nut correction for VOF-RANS. Adresses TKE over-prediction at the alpha
+  interface (and potential-flow regions adjacent to it) that caused
+  epsilon production to explode (3.24e+09) -> FPE @ t=3.85ms with plain
+  kEpsilon. Required by the model: epsilon, k, nut fields (present).
+  Applied to: k-equation and nut. epsilon-equation unchanged.
+
+  C  = 1.51 (default, k-omega-derived; conservative vs C2/C1=1.33 of k-eps)
+  lambda2 = 0.1  (nut correction ratio; 0 disables nut correction)
+  alpha   = 1.36 (1/Prt)
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+multiphaseStabilizedTurbulence1
+{
+    type            multiphaseStabilizedTurbulence;
+    rho             rho;
+    Cmu             0.09;
+    C               1.51;
+    lambda2         0.1;
+    alpha           1.36;
+}
+
+// Lesson 025 (LES dynamicKEqn) + 030er-Pipeline (kEps): zusaetzliche U/nut-Limiter
+// als defensive Safeguards. limitVelocity kappt seltene Spike-Cells (typ. 0.1%
+// der Zellen, max-Location am Drallkammer-Uebergang z~0 oder im L_exit-Bereich).
+// limitTurbulenceViscosity bleibt bei kEps + multiphaseStab praktisch immer
+// inaktiv (multiphaseStab haelt nut von alleine bounded) -- ist trotzdem als
+// Failsafe drin. Bei LES dynamicKEqn ist Umax=150 die kritische Stabilisierung
+// (ohne limitV explodiert k auf 1.6e6, siehe v21).
+limitVelocity1
+{
+    type            limitVelocity;
+    selectionMode   all;
+    max             150.0;
+}
+
+limitTurbulenceViscosity1
+{
+    type            limitTurbulenceViscosity;
+    selectionMode   all;
+    nut             nut;
+    c               1e3;   // nut_max = 1e3 * nu_air = 1.5e-2 m^2/s
+}
+
+
+// ************************************************************************* //

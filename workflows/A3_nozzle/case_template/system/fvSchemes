@@ -1,0 +1,82 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default         Euler;
+}
+
+gradSchemes
+{
+    // cellLimited fuer alles AUSSER p/p_rgh -- begrenzt die Gradienten
+    // an Cell-Sprungen, verhindert oszillierende Loesungen an scharfen
+    // Wasser/Luft-Interfaces und in hochskewer Mesh-Region (Inlet-
+    // Penetrationen). p_rgh bleibt unlimited (sonst zerfaellt das
+    // Druck-Korrektur-Verhalten).
+    default                 Gauss linear;
+    grad(U)                 cellLimited Gauss linear 1;
+    grad(k)                 cellLimited Gauss linear 1;
+    grad(epsilon)           cellLimited Gauss linear 1;
+    grad(alpha.water)       cellLimited Gauss linear 1;
+}
+
+divSchemes
+{
+    // Lehre 2026-06-06 (Cases 043/044/045/046): div(rhoPhi,U) ist DER
+    // dominante Hebel auf p_inlet UND auf Drall-Erhaltung -- ein einziger
+    // Scheme-Wechsel verschiebt p_inlet um Faktor ~2:
+    //
+    //   Gauss upwind            -> p_in 0.94 MPa (-7%) aber U_theta zerfaellt
+    //                              auf +/-11 m/s (-63%) -- Drall numerisch
+    //                              wegdiffundiert. NICHT verwenden bei Drall.
+    //   Gauss linearUpwind grad(U) (DEFAULT) -> p_in 1.24 (+24%) U_theta +/-25-27
+    //                              ausgewogen, 2nd-order stabilisiert mit Limiter.
+    //   Gauss linear (unlimited)-> p_in 1.88 (+88%, KATASTROPHAL!) aber U_theta
+    //                              +/-30 EXAKT Zhang. Numerisch instabil unter
+    //                              starkem Drall.
+    //
+    // div(phi,k|epsilon): Test 042 mit linUpwind statt upwind brachte keine
+    // substantielle Verbesserung in p_inlet/Film/U_theta. upwind ist hier
+    // ausreichend (k/eps sind ja schon stark dissipativ).
+    div(rhoPhi,U)                           Gauss linearUpwind grad(U);
+    div(phi,alpha)                          Gauss vanLeer;
+    div(phirb,alpha)                        Gauss linear;
+    div(phi,k)                              Gauss upwind;
+    div(phi,epsilon)                        Gauss upwind;
+    div(((rho*nuEff)*dev2(T(grad(U)))))     Gauss linear;
+}
+
+laplacianSchemes
+{
+    // limited corrected 0.333 statt corrected: tolerant fuer
+    // nonOrthogonality > 60deg (Mesh: 65deg + 2256 concave cells).
+    // 0.333 = standard, 0 = pure orthogonal (zu instabil), 1 = vollkorrigiert.
+    default         Gauss linear limited corrected 0.333;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         limited corrected 0.333;
+}
+
+
+// ************************************************************************* //

@@ -1,0 +1,41 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    location        "constant";
+    object          transportProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Zhang 2023 Section 2.2: Wasser bei 25 deg C, Luft bei 20 deg C, atmospheric.
+// Anmerkung 2026-06-06: bei p_inlet ~1 MPa wuerde echte Luft auf rho ~12 kg/m^3
+// komprimiert -- incompressible interFoam kann das nicht abbilden, daher
+// vermutlich Teil des strukturellen p_inlet-Bias +24-34%. Test mit
+// compressibleInterFoam laeuft in Case 049 (perfectGas air).
+phases (water air);
+
+water
+{
+    transportModel  Newtonian;
+    nu              1e-06;       // m^2/s, Wasser 25 deg C
+    rho             998;         // kg/m^3
+}
+
+air
+{
+    transportModel  Newtonian;
+    nu              1.5e-05;     // m^2/s, Luft 20 deg C
+    rho             1.2;         // kg/m^3 (incompressible Annahme)
+}
+
+sigma           0.072;           // N/m, Oberflaechenspannung Wasser/Luft
+
+// ************************************************************************* //

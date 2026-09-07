@@ -1,0 +1,172 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Solver-Stack uebernommen aus dem extrem stabilen SIMPLEX-shakeGrid-Case
+// (/DATA_HDD2/martin/SIMPLEX-shakeGrid/system/fvSolution). Wesentliche Aenderungen:
+//   - p_rgh/pcorr GAMG mit expliziten Coarse-Settings (nVcycles=2, minIter=1, ...)
+//   - U/k/epsilon auf PBiCGStab+DILU statt smoothSolver+symGaussSeidel (robuster)
+//   - PIMPLE: nOuterCorrectors 2->1, nCorrectors 3->2  (Martin's reduzierte
+//     corrector-Steps, weniger PIMPLE-Aufwand pro dt)
+//   - momentumPredictor no->yes  (impliziter U-Vorhersage-Step vor Druck)
+//   - correctPhi yes (Fluss-Feld-Korrektur nach jedem PIMPLE)
+// alpha.water bleibt MULES (NICHT isoAdvector wie SIMPLEX) -- Martin
+// bestaetigt, dass MULES bei uns durchweg stabiler ist.
+//
+// **Strukturelle Limitation 2026-06-06 (Cases 039-048)**: Mit interFoam +
+// RNGkEpsilon liefert die 1:1 Zhang2023-Replik (A1B2C2D2, Lk=5) einen
+// p_inlet-Bias +24-27% gegenueber Zhang's Fluent-CFD-Wert ~1.0 MPa, der
+// ROBUST ist gegenueber:
+//   - Wall-Function-Wahl (nutkWall ~ nutUSpaldingWall, Δ<0.2%; y+~62 = log-layer)
+//   - Inlet-Turbulenz-Intensitaet (5% vs 1%: Δp<2%)
+//   - Discretization k/eps (upwind vs linearUpwind: Δp<1%)
+//   - Outlet-BC (advective lInf=0.03 vs Zhang fixedValue 0: Δp<2%)
+//   - Turbulenz-Modell (RNGkEps 1.24 vs kOmegaSST 1.34 vs LES 1.15 MPa)
+// = vermutlich OpenFOAM-RNG-Implementation (Cmu_RNG, swirl-correction term,
+// near-wall treatment) divergiert von Fluent's RNG. Bei reiner Druck-Genauigkeit
+// ist LES (035/038) der einzige Stack mit p_in <+16%. compressibleInterFoam mit
+// perfectGas-Luft koennte Air-Core-Kompression beruecksichtigen (Faktor 5-10x
+// rho_air bei p=1 MPa) und so p_inlet weiter senken -- Test in 049 laeuft.
+solvers
+{
+    "alpha.water.*"
+    {
+        // 044 verifiziert: nAlphaCorr/nAlphaSubCycles von 3/8 auf 1/3 reduziert
+        // (naeher an interFoam-Defaults 2/2). Mit RNGkEps + multiphaseStab +
+        // Limiter + Zhang-BCs + no-prefill bleibt MULES sauber bounded
+        // (Min(alpha)=O(1e-14), Phase-1 volume fraction monoton).
+        nAlphaCorr      1;
+        nAlphaSubCycles 3;
+        cAlpha          1;
+
+        MULESCorr       yes;
+        nLimiterIter    5;
+
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-8;
+        relTol          0;
+        minIter         1;
+    }
+
+    pcorr
+    {
+        solver          GAMG;
+        smoother        GaussSeidel;
+        nPreSweeps      0;
+        nPostSweeps     2;
+        nVcycles        2;
+        cacheAgglomeration true;
+        nCellsInCoarsestLevel 50;
+        agglomerator    faceAreaPair;
+        mergeLevels     1;
+        tolerance       1e-06;
+        relTol          0.01;
+        minIter         1;
+    }
+
+    pcorrFinal
+    {
+        $pcorr;
+        tolerance       1e-07;
+    }
+
+    p_rgh
+    {
+        solver          GAMG;
+        smoother        GaussSeidel;
+        nPreSweeps      0;
+        nPostSweeps     2;
+        nVcycles        2;
+        cacheAgglomeration true;
+        nCellsInCoarsestLevel 50;
+        agglomerator    faceAreaPair;
+        mergeLevels     1;
+        tolerance       1e-06;
+        relTol          0.01;
+        minIter         1;
+    }
+
+    p_rghFinal
+    {
+        $p_rgh;
+        tolerance       1e-07;
+    }
+
+    U
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-05;
+        relTol          0.1;
+        minIter         1;
+    }
+
+    UFinal
+    {
+        $U;
+        tolerance       1e-06;
+    }
+
+    "(k|epsilon)"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-05;
+        relTol          0.1;
+        minIter         1;
+    }
+
+    "(k|epsilon)Final"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-06;
+        relTol          0.1;
+        minIter         1;
+    }
+}
+
+PIMPLE
+{
+    // 039 (RNGkEps + multiphaseStab + Limiter + Zhang-BCs + no-prefill): PISO 1/1/2
+    // verifiziert stabil von t=0 -- ohne bounding/limitV-trigger, dt steigt sogar
+    // leicht (5.7e-7 -> 6.9e-7 @ t=10ms). Lehre 2026-06-05: interFoam-VOF braucht
+    // typisch NICHT die hohen Corrector-Counts vom alten "Robustheits-Stack" (3/3/2),
+    // solange Mesh + Turbulenz-Stabilisierung + Zhang-konforme BCs sauber sind.
+    // Update 044 live-edit (2026-06-06): nCorrectors 1 -> 2 reduziert p_rgh
+    // Initial-Residual ~1000x (Median 7.8e-3 -> 7.9e-6) ohne Stabilitaetsverlust;
+    // ein extra PISO-Inner gibt dem Druck Zeit zum Equilibrieren nach VOF-Step.
+    // Weitere Reduktion nNonOrthogonalCorrectors 2 -> 1 (PISO 1/2/1) reicht
+    // ebenfalls -- bei Mesh-NonOrth Max 78 deg + median 7.7 deg ist 1 NonOrth-
+    // Korrektor + limited-corrected snGrad/laplacian ausreichend.
+    momentumPredictor           yes;
+    nOuterCorrectors            1;
+    nCorrectors                 2;
+    nNonOrthogonalCorrectors    1;
+    correctPhi                  yes;
+}
+
+relaxationFactors
+{
+    equations
+    {
+        ".*"            1;
+    }
+}
+
+
+// ************************************************************************* //

@@ -1,0 +1,13 @@
+title: "A3 Pressure-Swirl Nozzle -- Zhang 2023 (interFoam VOF)"
+description: "CFDPredict Testfall 3: parametrische Druck-Drall-Duese (Zhang 2023, Fig.1b). Konfiguriere die Zhang-Geometrie (Di/Ds/Ls/alpha/Do/Lo/Lk/n_inlet/L_exit/R_exit), Gitteraufloesung und Lauf im Browser. Baut das validierte Hybrid-Gitter (strukturiertes O-Grid-Bohrungsbett + snappyHexMesh-gestanzte Tangentialzulaeufe, prismatische Kammer + body-fitte Expansion, -z-Spray) und rechnet interFoam (VOF, RNG k-epsilon, Wasser/Luft). Ergebnis: Fluessigfilmdicke am Orifice-Austritt [mm] + Vordruck am Inlet [MPa], verglichen mit Zhang (~0.65 mm). Schwerer VOF-Lauf -> 128-Kern-Rechenziel."
+entry_script: py_A3_nozzle.py
+python_exec: ""  # export: inherit caller (Dresden venv), not cfdtools system Python
+input_filename: interface.json
+schema_file: interface.json
+inject_schema: true
+version: v2512
+uploads: false
+
+# Soft-lock: warnt (Override-Checkbox noetig), wenn dieser User schon so viele
+# laufende Jobs dieses Workflows hat. VOF-Laeufe sind teuer -> 1.
+max_concurrent_per_user: 1

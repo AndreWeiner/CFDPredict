@@ -1,0 +1,26 @@
+# Runtime dependencies for the A3_nozzle worker (Zhang 2023 pressure-swirl
+# nozzle, hybrid O-grid + snappyHexMesh).
+#
+# A3 is heavier than the A2 workflows because the mesh generator
+# (gen_a3_mesh.py + make_snap.py) builds the nozzle STL via trimesh
+# boolean unions (manifold3d engine) before snappy carves the tangential
+# inlets. The Streamlit portal pre-installs these system-wide; this file
+# exists for stand-alone use (Dresden Bayes-loop driver, CLI sweeps).
+#
+# Install with:  pip install -r requirements.txt
+#
+# What's NOT here:
+#   - OpenFOAM ESI v2512 (system install; see SYSTEM_REQUIREMENTS.md).
+#   - ParaView pvbatch (optional, only for the pv_*.py PNG renders).
+
+# Charts + report
+matplotlib >= 3.7
+
+# Mesh generation (STL booleans -> snappy input)
+numpy >= 1.26
+scipy >= 1.11
+trimesh >= 4.0
+manifold3d >= 3.0
+mapbox-earcut >= 1.0
+shapely >= 2.0
+networkx >= 3.0

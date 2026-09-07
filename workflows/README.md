@@ -1,11 +1,11 @@
-# CFDPredict A2 -- Standalone Workflow Package
+# CFDPredict A2 + A3 -- Standalone Workflow Package
 
-DHCAE Tools GmbH · ZIM-Förderprojekt CFDPredict · 2026-05-27
+DHCAE Tools GmbH · ZIM-Förderprojekt CFDPredict · 2026-05-27 (A3 added 2026-09)
 
-This package contains the **CFDPredict A2 Leitbleche** workflows in
-their headless form -- intended for the TU-Dresden Bayes-optimization
-loop on the Uni-cluster, as the data-generation pipeline for the
-ZIM-project's ROM-training-data work-package.
+This package contains the **CFDPredict A2 Leitbleche** and **A3 Pressure-Swirl
+Nozzle** workflows in their headless form -- intended for the TU-Dresden
+Bayes-optimization loop on the Uni-cluster, as the data-generation pipeline for
+the ZIM-project's ROM-training-data work-package.
 
 It's a curated subset of the `streamlit-demo-workflows` repository, with
 the Streamlit web layer stripped and replaced by a Python CLI + API.
@@ -20,8 +20,9 @@ mergeable.
 |---|---|
 | [`workflows/A2_brand_topology/`](workflows/A2_brand_topology/) | Brand 2020-Kap.7 reproduction (parallel-translated vanes, variable count). |
 | [`workflows/A2_leitbleche/`](workflows/A2_leitbleche/) | **A2 Mother topology** (concentric vanes + per-vane downstream extension). The Bayes-recommended variant -- see [`BAYES_TOPOLOGY_CHOICE.md`](BAYES_TOPOLOGY_CHOICE.md). |
+| [`workflows/A3_nozzle/`](workflows/A3_nozzle/) | **A3 pressure-swirl nozzle** (Zhang et al. 2023). Parametric geometry (Di/Ds/Ls/alpha/Do/Lo/Lk/n_inlet) -> hybrid O-grid + snappyHexMesh -> interFoam VOF. Heavier than A2 -- see the dependency and compute-cost notes below. |
 | [`tools/run_workflow.py`](tools/run_workflow.py) | CLI + Python API to drive any workflow without Streamlit. |
-| [`examples/`](examples/) | Ready-to-run settings JSON files + a Bayes-loop skeleton. |
+| [`examples/`](examples/) | Ready-to-run settings JSON files + a Bayes-loop skeleton (A2) + the full Zhang L16-DOE config set (A3, in `examples/A3_zhang_doe/`). |
 | [`SCHEMA.md`](SCHEMA.md) | Field-by-field reference of every form input. |
 | [`OUTPUTS.md`](OUTPUTS.md) | What `summary.json` / `results.zip` contain, units, columns. |
 | [`BAYES_INTEGRATION.md`](BAYES_INTEGRATION.md) | How to drive the workflow from a GP / EI loop, including crash handling. |
@@ -43,13 +44,28 @@ mergeable.
 
 ### 2. Python dependencies
 
-The runtime stack is intentionally tiny -- `matplotlib` is the only
-non-stdlib requirement.
+For **A2**, the runtime stack is intentionally tiny -- `matplotlib` is the
+only non-stdlib requirement.
 
 ```bash
 pip install -r workflows/A2_leitbleche/requirements.txt
 # (same content as workflows/A2_brand_topology/requirements.txt)
 ```
+
+**A3 is heavier**: it builds the nozzle geometry in Python (trimesh boolean
+unions via the manifold3d engine) before snappy ever runs, so it needs a real
+meshing-library stack, not just a plotting library:
+
+```bash
+pip install -r workflows/A3_nozzle/requirements.txt
+# matplotlib, numpy, scipy, trimesh, manifold3d, mapbox-earcut, shapely, networkx
+```
+
+If this goes into a venv (recommended -- see the venv note in
+[`SYSTEM_REQUIREMENTS.md`](SYSTEM_REQUIREMENTS.md)), `workflow.yaml`'s
+`python_exec: ""` already inherits whichever interpreter launched
+`run_workflow.py`, so activating the venv before running is enough -- no
+config edit needed.
 
 For the Bayes loop (additional, only needed by `examples/bayes_skeleton.py`):
 
@@ -94,6 +110,31 @@ python tools/run_workflow.py A2_leitbleche examples/mother_default_3vane.json \
 If `STREAMLIT_OPENFOAM_BASHRC` isn't set, the worker auto-resolves an
 OpenFOAM installation -- see the resolution chain in
 [`SYSTEM_REQUIREMENTS.md`](SYSTEM_REQUIREMENTS.md).
+
+### 4b. A3 end-to-end -- and its compute cost
+
+```bash
+# Zhang's own predicted optimum, A4B1C2D4 (verification case)
+python tools/run_workflow.py A3_nozzle examples/A3_zhang_doe/A4B1C2D4.json \
+                             --name a4b1c2d4 --timeout 43200
+
+# The full 16-case L16 DOE, sequentially, skipping finished cases on rerun:
+bash examples/A3_zhang_doe/run_all.sh
+```
+
+⚠ **A3 is not a quick smoke case.** `workflow.yaml` targets 128 cores
+(`max_concurrent_per_user: 1` -- these VOF runs are expensive), and the
+DOE configs run `end time = 0.150 s` for spray-cone + inlet-pressure
+convergence. Budget accordingly before queuing the full 16-case array;
+for OpenFOAM-only smoke-testing, `--dry-build` (no solver) is available
+the same way as for A2, and `--timeout` can be lowered to bail out of a
+run early once a few time-steps have written (useful to confirm the
+pipeline works before committing full cluster time).
+
+If `STREAMLIT_OPENFOAM_BASHRC` isn't set for A3 either, only a single
+cfdtools-specific fallback path is tried (unlike A2's longer resolution
+chain) -- setting the env var explicitly is the safe default on any other
+cluster.
 
 ### 5. Bayes loop (the actual project use case)
 

@@ -1,0 +1,39 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           volScalarField;
+    location        "0";
+    object          alpha.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Outlet alpha-BC-Wahl (Lesson 047):
+//   zeroGradient    DHCAE-Default (BC_erkenntnisse.md). Laesst alpha
+//                   ungehindert austreten, unabhaengig von der Stroemungs-
+//                   richtung. Robust gegen Rueckstroemung.
+//   inletOutlet 0   Zhang2023-Paper exact (Section 2.2). Bei Rueckstroemung
+//                   wirkt es als fixedValue 0 (Luft kommt zurueck).
+// Default Template = Zhang exact, kombiniert mit p_rgh fixedValue 0 (siehe
+// 0/p_rgh-Kommentar). Toggle "Zhang outlet BCs"=0 patcht zurueck zu zG.
+// Domain startet leer (alpha=0 ueberall, Lesson 028 -- KEIN setFields-Prefill).
+dimensions      [0 0 0 0 0 0 0];
+internalField   uniform 0;
+
+boundaryField
+{
+    inlet         { type fixedValue;  value uniform 1; }    // pure water enters
+    outlet        { type inletOutlet; inletValue uniform 0; value uniform 0; }
+    lexit_side    { type inletOutlet; inletValue uniform 0; value uniform 0; }
+    wall          { type zeroGradient; }
+    chamberBottom { type zeroGradient; }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,53 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           volScalarField;
+    location        "0";
+    object          k;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Lesson 041 (2026-06-06): Inlet-Turbulenz-Intensitaet 0.05 (5%) -> 0.01 (1%).
+// 5% war Default-Annahme aus Standard-Pipe-Flow-Tabellen, ist aber fuer einen
+// drall-getriebenen Hochdruck-Pressure-Swirl-Atomizer ZU HOCH:
+//   - bei I=5%: k_inlet=1.28, epsilon_inlet=1700, schmiert U_theta-Peak weich
+//   - bei I=1%: k_inlet=0.051, epsilon_inlet=42, **schaerferes** Drall-Profil
+//     + Film -7% besser + U_theta-Peak +7% naeher an Zhang
+// internalField wird vom Solver innerhalb der ersten ~1ms schnell reorganisiert,
+// initial-Wert ist nicht kritisch (1.28 bleibt als Sicherheits-Schaetzwert).
+dimensions      [0 2 -2 0 0 0 0];
+internalField   uniform 1.28;
+
+boundaryField
+{
+    inlet
+    {
+        type            turbulentIntensityKineticEnergyInlet;
+        intensity       0.01;
+        value           uniform 0.051;
+    }
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform 1.28;
+        value           uniform 1.28;
+    }
+    lexit_side
+    {
+        type            inletOutlet;
+        inletValue      uniform 1.28;
+        value           uniform 1.28;
+    }
+    wall          { type kqRWallFunction; value uniform 1.28; }
+    chamberBottom { type kqRWallFunction; value uniform 1.28; }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,40 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           volScalarField;
+    location        "0";
+    object          p_rgh;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Outlet-BC-Wahl (Lesson 047 2026-06-06):
+//   advective lInf=0.03    DHCAE non-reflecting (VOF2LG-Framework). lInf=L_amb,
+//                          relaxiert langsam auf 0. Standard fuer Spray-Sims
+//                          mit Ambient-Domain.
+//   fixedValue 0           Zhang2023-Paper exact (Section 2.2). Liefert Film
+//                          ~-0.7% vom Paper-Wert -- bestes Film-Match aller
+//                          Cases. p_inlet identisch zu advective (BC ist NICHT
+//                          die +24% Bias-Quelle).
+// Default Template = Zhang exact (Toggle "Zhang outlet BCs"=1 im Streamlit).
+// Toggle=0 -> py_A3_nozzle.py patcht zu advective zurueck (DHCAE-Default).
+dimensions      [1 -1 -2 0 0 0 0];
+internalField   uniform 0;
+
+boundaryField
+{
+    inlet         { type fixedFluxPressure; value uniform 0; }
+    outlet        { type fixedValue;        value uniform 0; }     // Zhang exact
+    lexit_side    { type fixedValue;        value uniform 0; }     // Zhang exact
+    wall          { type fixedFluxPressure; value uniform 0; }
+    chamberBottom { type fixedFluxPressure; value uniform 0; }
+}
+
+// ************************************************************************* //

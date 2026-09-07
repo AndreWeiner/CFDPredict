@@ -1,0 +1,224 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          controlDict;
+}
+
+application     interFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         0.025;
+
+deltaT          1e-07;
+
+adjustTimeStep  yes;
+
+maxCo           0.7;
+
+maxAlphaCo      0.7;
+
+maxDeltaT       5e-05;
+
+writeControl    adjustableRunTime;
+
+writeInterval   0.0001;     // 10x haeufiger fuer smoothe Spray-Animation + Diagnostik
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  9;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   8;
+
+runTimeModifiable yes;
+
+functions
+{
+    // global min/max + Position der Extrema fuer U, p_rgh, k, epsilon, nut
+    // -- zeigt wo die Werte aufschlagen (Air-Core-Spitze? Inlet-Penetration?).
+    // location true -> XYZ-Koordinaten im log.
+    fieldMinMax_kepUp
+    {
+        type            fieldMinMax;
+        libs            ( "libfieldFunctionObjects.so" );
+        writeControl    timeStep;
+        writeInterval   20;
+        log             true;
+        location        true;
+        mode            magnitude;
+        fields          ( U p_rgh k epsilon nut );
+    }
+    inletPressure
+    {
+        type            surfaceFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        writeControl    timeStep;
+        writeInterval   20;
+        log             true;
+        writeFields     false;
+        regionType      patch;
+        name            inlet;
+        operation       areaAverage;
+        fields          ( p );
+    }
+    filmPlane
+    {
+        type            surfaceFieldValue;
+        libs            ( "libfieldFunctionObjects.so" );
+        writeControl    timeStep;
+        writeInterval   20;
+        log             true;
+        writeFields     false;
+        regionType      sampledSurface;
+        name            filmSurface;
+        sampledSurfaceDict
+        {
+            type            plane;
+            planeType       pointAndNormal;
+            pointAndNormalDict
+            {
+                point           ( 0 0 -0.019 );
+                normal          ( 0 0 1 );
+            }
+            interpolate     true;
+        }
+        operation       areaIntegrate;
+        fields          ( alpha.water );
+    }
+    // circumferential (swirl) velocity profile on the orifice plane (same z as
+    // filmPlane -> the worker patches BOTH points to z_film via one replace).
+    // raw surface -> the extractor reads x y z U and computes the tangential
+    // component U_theta = (-Ux*y + Uy*x)/r (about the z spray axis).
+    swirlU
+    {
+        type            surfaces;
+        libs            ( "libsampling.so" );
+        writeControl    writeTime;
+        surfaceFormat   raw;
+        interpolationScheme cellPoint;
+        fields          ( U );
+        surfaces
+        {
+            orificePlane
+            {
+                type            plane;
+                planeType       pointAndNormal;
+                pointAndNormalDict
+                {
+                    point           ( 0 0 -0.019 );
+                    normal          ( 0 0 1 );
+                }
+                interpolate     true;
+            }
+        }
+    }
+    // Radiale 1D-Sample-Linien (Lessons aus 2026-06-05/06):
+    //
+    //  (a) Die existierende filmPlane FO via areaIntegrate ueberschaetzt den
+    //      Film systematisch +16-67% wegen Mismatch zwischen tatsaechlicher
+    //      Plane-Area (haengt von Mesh-Querschnitt ab) und R_int-konformer
+    //      Rueck-Rechnung im Extractor. Sample-Linie ist die korrekte Methode:
+    //      Film = mittlere alpha>=0.5-Breite (negativer + positiver x-Halbraum).
+    //
+    //  (b) z=-24.9 (= 1mm vor Outlet) statt frueheren z=-25.9: bei Lk=5
+    //      endet das Mesh bei z=-25.0; Sample-Punkte ausserhalb wurden mit
+    //      alpha=0 gefuellt -> artifiziell verkuerzte Film-Breite. Bei
+    //      Lk=6-Cases (030/035/038) lag z=-25.9 noch knapp im Mesh, deswegen
+    //      erst bei 048 entdeckt. z=-24.9 ist sicher fuer beide Lk-Varianten.
+    //
+    //  (c) parallel mpirun postProcess -func 'sampleLineZ249' ist
+    //      die einzige zuverlaessige Auswertungs-Methode auf decomposed mesh
+    //      (postProcess ohne -parallel laeuft serial und schreibt leere
+    //      Daten fuer Cells in Processor-Anderen-Domains).
+    //
+    // Endpunkte +/-0.005 m (deckt D_o bis 10mm); Format raw -> Spalten:
+    //   distance alpha.water Ux Uy Uz  (Distanz = 0..0.01 vom Linien-Start)
+    // U_theta = -Uy direkt aus dieser Linie (antisymmetrisch um x=0).
+    outletSampleLines
+    {
+        type            sets;
+        libs            ( "libsampling.so" );
+        writeControl    writeTime;
+        interpolationScheme cellPoint;
+        setFormat       raw;
+        fields          ( alpha.water U );
+        sets
+        {
+            radial_orifice
+            {
+                // Mid-Bore z=-19mm: U_theta-Peak-Auswertung
+                type    uniform;
+                axis    distance;
+                start   (-0.005 0 -0.019);
+                end     ( 0.005 0 -0.019);
+                nPoints 301;
+            }
+            radial_outlet
+            {
+                // 1mm vor Outlet z=-24.9mm: Film-Dicke + U_theta @ Outlet
+                type    uniform;
+                axis    distance;
+                start   (-0.005 0 -0.0249);
+                end     ( 0.005 0 -0.0249);
+                nPoints 301;
+            }
+        }
+    }
+    // Sprueh-Kegelwinkel (Task 3): 5 sampledSurface-Planes stromabwaerts des
+    // Nozzle-Exits (z_exit = -32 mm im geflippten Frame). Planes bei z = -37/-42/
+    // -47/-52/-57 mm = 5/10/15/20/25 mm downstream of exit. raw-Format -> der
+    // Worker liest x,y,z,alpha.water und extrahiert pro Plane den max. Radius mit
+    // alpha>0.25 -> Cone-Angle = 2*atan(r/|z - z_exit|). Bei AMBIENT=False sind
+    // die Planes ausserhalb des Meshes -> leere Daten, der FO faellt still durch.
+    coneAlpha
+    {
+        type            surfaces;
+        libs            ( "libsampling.so" );
+        writeControl    writeTime;
+        surfaceFormat   raw;
+        interpolationScheme cellPoint;
+        fields          ( alpha.water );
+        surfaces
+        {
+            coneZ05 { type plane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 -0.037); normal (0 0 1); }
+                      interpolate true; }
+            coneZ10 { type plane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 -0.042); normal (0 0 1); }
+                      interpolate true; }
+            coneZ15 { type plane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 -0.047); normal (0 0 1); }
+                      interpolate true; }
+            coneZ20 { type plane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 -0.052); normal (0 0 1); }
+                      interpolate true; }
+            coneZ25 { type plane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 -0.057); normal (0 0 1); }
+                      interpolate true; }
+        }
+    }
+}
+
+
+// ************************************************************************* //
