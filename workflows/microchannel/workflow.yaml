@@ -1,0 +1,11 @@
+title: "thermalShell micro-channel (regenerator wheel)"
+description: "One corrugated-foil channel of a rotary regenerator: vertical-cut 2D mesh extruded in Z, buoyantPimpleFoam + finite-area thermal shell under an oscillating mass flow. Outputs over the last complete cycle: pressure drop dP_avg and effectiveness eps."
+entry_script: py_microchannel.py
+python_exec: ""
+input_filename: interface.json
+schema_file: interface.json
+inject_schema: true
+version: v2406
+uploads: false
+
+max_concurrent_per_user: 1

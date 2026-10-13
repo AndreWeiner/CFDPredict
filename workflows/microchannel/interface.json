@@ -1,0 +1,90 @@
+{
+  "project name": [
+    0, "20260929_microchannel_nominal", "string", "nameYourProject", null,
+    "Project name. Becomes the case/report folder."
+  ],
+
+  "Geometry": [10, "", "separator", "", null, ""],
+  "channel height a [mm]": [
+    11, 1.55, "float", ["1.55"], null,
+    "Outer channel height."
+  ],
+  "half-wavelength b [mm]": [
+    12, 1.69, "float", ["1.69"], null,
+    "Half-wavelength of the corrugation."
+  ],
+  "crest fillet radius R [mm]": [
+    13, 0.32, "float", ["0.32"], null,
+    "Fluid-facing crest fillet radius (trough fillet is R + s)."
+  ],
+  "foil gauge s [mm]": [
+    14, 0.05, "float", ["0.05"], null,
+    "Full foil thickness t. The geometry, channel count and feasibility gate use t; the CFD shell (h_outerShell, T thickness) gets t/2, the half of the foil each channel owns."
+  ],
+  "channel length l [mm]": [
+    15, 60.0, "float", ["60"], null,
+    "Wheel depth / channel length (Z extrusion, 1.5 layers/mm at refinement 1)."
+  ],
+
+  "Operation": [20, "", "separator", "", null, ""],
+  "wheel speed N_rot [rpm]": [
+    21, 75.0, "float", ["75"], null,
+    "Rotation speed -> oscillation period T = 60/N_rot."
+  ],
+  "wheel_outer_diameter D_o [mm]": [
+    22, 300.0, "float", ["300"], null,
+    "Wheel outer diameter. Sets the channel count N_ch and hence the per-channel mass flow (see mdot)."
+  ],
+  "wheel_inner_diameter D_i [mm]": [
+    23, 0.0, "float", ["0"], null,
+    "Wheel inner (hub) diameter, 0 <= D_i < D_o. Sets the channel count N_ch and hence the per-channel mass flow (see mdot)."
+  ],
+  "wheel mass flow rate mdot [kg/s]": [
+    24, 0.0444763, "float", ["0.0444763"], null,
+    "Inlet mass flow of the WHOLE wheel. Split over N_ch = pi(Do^2 - Di^2) / (4 b (a + s)) channels; the half-channel domain gets mdot / (2 N_ch)."
+  ],
+  "hot inlet temperature [K]": [
+    25, 298.0, "float", ["298"], null,
+    "Gas temperature entering at the inlet patch (forward pass)."
+  ],
+  "cold inlet temperature [K]": [
+    26, 278.0, "float", ["278"], null,
+    "Gas temperature entering at the outlet patch (reverse pass)."
+  ],
+  "initial temperature [K]": [
+    27, 288.0, "float", ["288"], null,
+    "Initial shell (foil) temperature, Ts_outerShell."
+  ],
+
+  "Mesh & solver": [30, "", "separator", "", null, ""],
+  "mesh refinement r": [
+    31, 1.0, "float", ["0.5", "1.0", "2.0"], null,
+    "Global refinement: every cell dimension scales as 1/r (1.0 = reference mesh)."
+  ],
+  "maxCo": [
+    32, 3.0, "float", ["2", "3"], null,
+    "Maximum Courant number (adjustable time step)."
+  ],
+  "nCorrectors": [
+    33, 8, "integer", "", null,
+    "PIMPLE pressure correctors."
+  ],
+  "end time [s]": [
+    34, 50.0, "float", ["10", "16", "50"], null,
+    "Simulated time. The outputs are read over the last complete cycle."
+  ],
+
+  "Run-time": [50, "", "separator", "", null, ""],
+  "number of processors": [
+    51, 12, "integer", "", null,
+    "MPI ranks. 1 = serial Allrun; >1 = Allrun-parallel (decomposePar + makeFaMesh/solver -parallel). Capped at 128."
+  ],
+  "contact email": [
+    52, "", "string", "user@example.com", null,
+    "Job-done mail target. Ignored by the CLI."
+  ],
+  "comments": [
+    53, "", "text_area", 100, null,
+    "Free-text notes."
+  ]
+}

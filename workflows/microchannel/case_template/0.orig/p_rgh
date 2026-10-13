@@ -1,0 +1,67 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2406                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      p_rgh;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions  [1 - 1 - 2 0 0 0 0];
+
+internalField uniform 1e5;
+
+boundaryField
+{
+#includeEtc "caseDicts/setConstraintTypes"
+
+    ".*"
+    {
+        type fixedFluxPressure;
+        value $internalField;
+    }
+
+    // Dirichlet/Neumann roles swap between inlet and outlet in sync with
+    // U's reversal signal -- see the matching comment in 0.orig/p.
+    inlet
+    {
+        type            uniformMixed;
+        value           $internalField;
+
+        uniformValue    constant 1e5;
+        uniformGradient constant 0;
+
+        uniformValueFraction
+        {
+            type        expression;
+            variables   ( #include "flowOscillationParams" );
+            expression  "pos( -tanh( sin(2*pi()*time() / T) * Ts ) )";
+        }
+    }
+
+    outlet
+    {
+        type            uniformMixed;
+        value           $internalField;
+
+        uniformValue    constant 1e5;
+        uniformGradient constant 0;
+
+        uniformValueFraction
+        {
+            type        expression;
+            variables   ( #include "flowOscillationParams" );
+            expression  "pos( tanh( sin(2*pi()*time() / T) * Ts ) )";
+        }
+    }
+
+}
+
+// ************************************************************************* //

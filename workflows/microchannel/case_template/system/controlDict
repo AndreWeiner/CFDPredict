@@ -1,0 +1,202 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2406                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     buoyantPimpleFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         @END_TIME@;
+
+deltaT          1e-6;
+
+writeControl    adjustable;
+
+writeInterval   1e-1;
+
+purgeWrite      1;
+
+writeFormat     binary;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable  true;
+
+maxCo           @MAX_CO@;
+
+adjustTimeStep  yes;
+
+functions
+{
+    solverInfo
+    {
+        type            solverInfo;
+        libs            ("libutilityFunctionObjects.so");
+        fields          (U h p_rgh);
+        log             true;
+        writeResidualFields false;
+        executeControl  timeStep;
+        executeInterval 1;
+        writeControl    timeStep;
+        writeInterval   1;
+    }
+
+    fieldMinMax
+    {
+        type        fieldMinMax;
+        libs        (fieldFunctionObjects);
+        mode        magnitude;
+        fields      (U T p);
+        location    true;
+        log         true;
+        executeControl  timeStep;
+        executeInterval 10;
+        writeControl    timeStep;
+        writeInterval   10;
+    }
+
+    delta_p
+    {
+        type        multiFieldValue;
+        libs        (fieldFunctionObjects);
+        operation   subtract;
+        functions
+        {
+            pInlet
+            {
+                type            surfaceFieldValue;
+                libs            (fieldFunctionObjects);
+                fields          (p);
+                operation       areaAverage;
+                regionType      patch;
+                name            inlet;
+                writeFields     false;
+            }
+
+            pOutlet
+            {
+                type            surfaceFieldValue;
+                libs            (fieldFunctionObjects);
+                fields          (p);
+                operation       areaAverage;
+                regionType      patch;
+                name            outlet;
+                writeFields     false;
+            }
+        }
+        writeToFile     true;
+        log             true;
+        executeControl  timeStep;
+        executeInterval 10;
+        writeControl    timeStep;
+        writeInterval   10;
+    }
+
+    delta_T
+    {
+        type        multiFieldValue;
+        libs        (fieldFunctionObjects);
+        operation   subtract;
+        functions
+        {
+            TInlet
+            {
+                type            surfaceFieldValue;
+                libs            (fieldFunctionObjects);
+                fields          (T);
+                operation       areaAverage;
+                regionType      patch;
+                name            inlet;
+                writeFields     false;
+            }
+
+            TOutlet
+            {
+                type            surfaceFieldValue;
+                libs            (fieldFunctionObjects);
+                fields          (T);
+                operation       areaAverage;
+                regionType      patch;
+                name            outlet;
+                writeFields     false;
+            }
+        }
+        writeToFile     true;
+        log             true;
+        executeControl  timeStep;
+        executeInterval 10;
+        writeControl    timeStep;
+        writeInterval   10;
+    }
+
+    // Cross-section slices for the report images (pv_slices.py). Written
+    // every T/4 (the grid is anchored at t = 0, so it hits mid-forward T/4
+    // and mid-reverse 3T/4 of every cycle, plus the reversals T/2 and T).
+    // The worker prunes all but the last two cycles while the solver runs
+    // and keeps only the steady cycle's T/4 + 3T/4 at the end.
+    // The write interval (T/4) and the plane positions (z = 0.2/0.4/0.6/0.8
+    // l, in m) are substituted by build_case.py.
+    slices
+    {
+        type            surfaces;
+        libs            (sampling);
+        writeControl    adjustableRunTime;
+        writeInterval   @SLICE_INTERVAL@;
+        surfaceFormat   vtk;
+        fields          (U T);
+        interpolationScheme cellPoint;
+        surfaces
+        {
+            slice20 { type cuttingPlane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 @Z1@); normal (0 0 1); }
+                      interpolate true; }
+            slice40 { type cuttingPlane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 @Z2@); normal (0 0 1); }
+                      interpolate true; }
+            slice60 { type cuttingPlane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 @Z3@); normal (0 0 1); }
+                      interpolate true; }
+            slice80 { type cuttingPlane; planeType pointAndNormal;
+                      pointAndNormalDict { point (0 0 @Z4@); normal (0 0 1); }
+                      interpolate true; }
+        }
+    }
+
+    // Shell (foil) temperature for the report images (pv_shell.py): the
+    // finite-area field on the whole wetted wall, same T/4 grid and pruning
+    // as "slices". Only works inside the solver (the faMesh must exist), and
+    // v2406 writes each field twice -- the worker strips the copy before
+    // rendering (images.dedupe_vtp).
+    shell
+    {
+        type            areaWrite;
+        libs            (utilityFunctionObjects);
+        writeControl    adjustableRunTime;
+        writeInterval   @SLICE_INTERVAL@;
+        fields          (Ts_outerShell);
+        surfaceFormat   vtk;
+    }
+}
+
+
+// ************************************************************************* //

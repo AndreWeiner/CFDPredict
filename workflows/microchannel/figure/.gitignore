@@ -1,0 +1,3 @@
+# figure sources: kept locally, not versioned (the rendered images are)
+*.py
+pipeline.dot

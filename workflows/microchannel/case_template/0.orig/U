@@ -1,0 +1,79 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2406                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+dimensions      [ 0 1 -1 0 0 0 0 ];
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    inlet
+    {
+        type                uniformMixed;
+        value               $internalField;
+
+        uniformValue
+        {
+            type        expression;
+            variables   ( #include "flowOscillationParams" );
+            // rho is sampled live from the solver's density field (perfectGas EOS,
+            // rho = p/(R*T))
+            expression  "( (mdotIn/(weightAverage(rho)*weightSum(1))) * tanh( sin(2*pi()*time() / T) * Ts ) ) * vector(0, 0, 1)";
+        }
+
+        uniformGradient constant (0 0 0);
+
+        uniformValueFraction
+        {
+            type        expression;
+            variables   ( #include "flowOscillationParams" );
+            expression  "pos( tanh( sin(2*pi()*time() / T) * Ts ) )";
+        }
+    }
+
+    outlet
+    {
+        type                uniformMixed;
+        value               $internalField;
+
+        uniformValue
+        {
+            type        expression;
+            variables   ( #include "flowOscillationParams" );
+            expression  "( (mdotIn/(weightAverage(rho)*weightSum(1))) * tanh( sin(2*pi()*time() / T) * Ts ) ) * vector(0, 0, 1)";
+        }
+
+        uniformGradient constant (0 0 0);
+
+        uniformValueFraction
+        {
+            type        expression;
+            variables   ( #include "flowOscillationParams" );
+            expression  "pos( -tanh( sin(2*pi()*time() / T) * Ts ) )";
+        }
+    }
+
+    thermalShell
+    {
+        type            noSlip;
+    }
+}
+
+
+
+// ************************************************************************* //

@@ -1,0 +1,34 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+# --- mesh: extrude the 2D cross-section in Z, then split/rename the
+# boundary patches. build_case.py writes constant/triSurface/mesh.obj (the 2D
+# cross-section, pre-scaled to metres) and one extrudeMeshDict.stageN per Z
+# division (graded fine-coarse-fine; the stages chain through the
+# "otherSide" patch); topoSet/createPatch then split/rename the patches to
+# match the field files. These five steps always re-run (-o): they are
+# cheap, deterministic, and form one chain, so partial reuse (a stale mesh
+# with unrenamed patches) is worse than the few seconds they cost.
+runApplication -o -s stage1 extrudeMesh -dict system/extrudeMeshDict.stage1
+runApplication -o -s stage2 extrudeMesh -dict system/extrudeMeshDict.stage2
+runApplication -o -s stage3 extrudeMesh -dict system/extrudeMeshDict.stage3
+
+runApplication -o topoSet
+runApplication -o createPatch -overwrite
+
+restore0Dir
+
+runApplication makeFaMesh
+
+runApplication $(getApplication)
+
+#------------------------------------------------------------------------------
+
+## Parallel version (disabled: makeFaMesh -parallel segfaults in OF2406 libfaReconstruct)
+# restore0Dir
+# runApplication blockMesh
+# runParallel -s decompose redistributePar -decompose
+# runParallel makeFaMesh
+# runParallel $(getApplication)

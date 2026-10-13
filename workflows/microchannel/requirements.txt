@@ -1,0 +1,11 @@
+# Runtime dependencies for the microchannel worker (py_microchannel.py).
+#
+# workflow.yaml has python_exec: "", so these must be installed in the
+# interpreter that launches the worker (the portal's, or the one running
+# tools/run_workflow.py). Minimums are the versions this was tested with.
+# OpenFOAM v2406 is needed as well -- see the repo's SYSTEM_REQUIREMENTS.md.
+
+numpy >= 1.26        # geometry, mesh, postProcessing reduction
+scipy >= 1.11        # mesher: spline fits (BlockMesh), KD-tree (Connect)
+gmsh >= 4.15         # mesher: unstructured cap of the core (mesher/core.py)
+matplotlib >= 3.6    # h_profile.png / full_pitch.png (non-fatal if missing)

@@ -1,0 +1,39 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox         |
+|  \\    /   O peration     | Version:  v2406                               |
+|   \\  /    A nd           | Website:  www.openfoam.com                    |
+|    \\/     M anipulation  |                                               |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+version     2.0;
+format ascii;
+class dictionary;
+object topoSetDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Isolates the centerPlane faces out of extrudeMesh's single "sides" patch:
+// mesher/Assemble.py's chain A (p0-p5-p6-p9) always sits at x=0 exactly, so
+// a thin box around x=0 picks out exactly those faces regardless of the
+// channel's actual size -- no per-case substitution needed here.
+actions
+(
+    {
+        name    centerPlaneFaces;
+        type    faceSet;
+        action  new;
+        source  patchToFace;
+        patch   sides;
+    }
+    {
+        name    centerPlaneFaces;
+        type    faceSet;
+        action  subset;
+        source  boxToFace;
+        box     (-1e-6 -1e6 -1e6) (1e-6 1e6 1e6);
+    }
+);
+
+// ************************************************************************* //
