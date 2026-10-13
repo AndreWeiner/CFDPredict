@@ -247,7 +247,7 @@ the wheel is designed for, or a fixed numerical setting.
 |---|---|---|
 | a, b, R, l, N_rot | **continuous** | design variables |
 | s | **discrete** | standard foil gauges (0.05 / 0.055 / 0.07 / 0.1 mm); a discrete variable, or fixed at 0.05 mm, the optimum of De Antonellis et al. [3] |
-| ṁ_wheel, T_hot, T_cold | **fixed operating point** | - |
+| ṁ_stream, T_hot, T_cold | **fixed operating point** | - |
 | D_o, D_i | **fixed** | fixed by the air-handling unit the wheel must fit; they set only the channel count N_ch and hence the per-channel mass flow |
 | T_init | fixed | foil start temperature only |
 | r, maxCo, nCorrectors, end time, n_proc | fixed | numerical settings; must not change during a study |
@@ -270,7 +270,7 @@ thickness.
 | s (foil thickness) | **0.04 – 0.10 mm** (discrete) | "aluminium sheet or aluminium foil with a thickness in the range of 0.04 to 0.1 mm" [2]; 0.05, 0.055, 0.07 and 0.1 mm used in [1]; 0.05 mm is the thinnest with sufficient mechanical strength and the optimum in [3] |
 | l (wheel depth) | **100 – 200 mm** | "usually in the range of 100 to 200 mm, while 200 mm is the standard depth" [2]; manufacturers offer 100, 150, 200 and 250 mm [7, 8]; 110 – 200 mm tested [1, 2]. No datasheet below 100 mm was found |
 | N_rot (wheel speed) | **0.5 – 20 rpm** | speed is controlled "typically within a range of 0 to 20 rpm" and "a reduced rotational speed (below 1 rpm) can also be used for frost protection" [1]; standard speed 12 rpm, lowering it is a frost-protection measure [7]; highest effectiveness at 10 – 16 rpm [1] |
-| ṁ (air flow) | **0.47 / 0.93 / 1.37 kg/s per stream** (discrete) | the three measured and simulated airflows of [1, 2], 1 400 / 2 800 / 4 200 m³/h (1 680 / 3 360 / 4 920 kg/h) for D_o = 1010 mm; they correspond to face velocities of 1 / 2 / 3 m/s, the normal range in ventilation [2, 7]. The workflow input `mdot` is both streams together: **ṁ_wheel = 0.93 / 1.87 / 2.73 kg/s** |
+| ṁ_stream (air flow of one stream) | **0.47 / 0.93 / 1.37 kg/s** | the three measured and simulated airflows of [1, 2], 1 400 / 2 800 / 4 200 m³/h (1 680 / 3 360 / 4 920 kg/h) for D_o = 1010 mm; they correspond to face velocities of 1 / 2 / 3 m/s, the normal range in ventilation [2, 7] |
 | D_o, D_i (wheel diameters) | e.g. **1010 / 120 mm** | the tested wheel [1, 2]; wheels are made from 200 to 6000 mm [2], one manufacturer's range is 200 – 3800 mm [7]. Fixed |
 | T_hot / T_cold | **298 / 278 K** | the conditions of the measurements and CFD of [1, 2] (25 / 5 °C) |
 
