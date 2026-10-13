@@ -25,11 +25,11 @@
 <!-- inputs -->
 <g id="node2" class="node">
 <title>inputs</title>
-<path fill="#eef4fc" stroke="#2a78d6" stroke-width="1.2" d="M453,-932.5C453,-932.5 143,-932.5 143,-932.5 137,-932.5 131,-926.5 131,-920.5 131,-920.5 131,-908.5 131,-908.5 131,-902.5 137,-896.5 143,-896.5 143,-896.5 453,-896.5 453,-896.5 459,-896.5 465,-902.5 465,-908.5 465,-908.5 465,-920.5 465,-920.5 465,-926.5 459,-932.5 453,-932.5"/>
+<path fill="#eef4fc" stroke="#2a78d6" stroke-width="1.2" d="M456,-932.5C456,-932.5 140,-932.5 140,-932.5 134,-932.5 128,-926.5 128,-920.5 128,-920.5 128,-908.5 128,-908.5 128,-902.5 134,-896.5 140,-896.5 140,-896.5 456,-896.5 456,-896.5 462,-896.5 468,-902.5 468,-908.5 468,-908.5 468,-920.5 468,-920.5 468,-926.5 462,-932.5 456,-932.5"/>
 <text text-anchor="start" x="222.5" y="-916.85" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.50">Inputs</text>
 <text text-anchor="start" x="260.5" y="-916.85" font-family="Helvetica,sans-Serif" font-size="10.50"> &#160;</text>
 <text text-anchor="start" x="267.5" y="-916.85" font-family="Helvetica,sans-Serif" font-size="9.00">series_dir/interface.json</text>
-<text text-anchor="start" x="143" y="-907.55" font-family="Helvetica,sans-Serif" font-size="9.00">a, b, R, s, l, N_rot · D_o, D_i, ṁ_wheel · T_hot, T_cold · mesh &amp; solver</text>
+<text text-anchor="start" x="140" y="-907.55" font-family="Helvetica,sans-Serif" font-size="9.00">a, b, R, s, l, N_rot · D_o, D_i, ṁ_stream · T_hot, T_cold · mesh &amp; solver</text>
 </g>
 <!-- gui&#45;&gt;inputs -->
 <g id="edge1" class="edge">
@@ -56,16 +56,16 @@
 <!-- mdot -->
 <g id="node4" class="node">
 <title>mdot</title>
-<path fill="#eef4fc" stroke="#2a78d6" stroke-width="1.2" d="M316,-750.5C316,-750.5 78,-750.5 78,-750.5 72,-750.5 66,-744.5 66,-738.5 66,-738.5 66,-726.5 66,-726.5 66,-720.5 72,-714.5 78,-714.5 78,-714.5 316,-714.5 316,-714.5 322,-714.5 328,-720.5 328,-726.5 328,-726.5 328,-738.5 328,-738.5 328,-744.5 322,-750.5 316,-750.5"/>
-<text text-anchor="start" x="116.5" y="-734.85" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.50">Wheel → channel mass flow</text>
-<text text-anchor="start" x="78" y="-725.55" font-family="Helvetica,sans-Serif" font-size="9.00">analytical: ṁ_channel = f(ṁ_wheel, a, b, s, D_o, D_i)</text>
+<path fill="#eef4fc" stroke="#2a78d6" stroke-width="1.2" d="M317,-750.5C317,-750.5 73,-750.5 73,-750.5 67,-750.5 61,-744.5 61,-738.5 61,-738.5 61,-726.5 61,-726.5 61,-720.5 67,-714.5 73,-714.5 73,-714.5 317,-714.5 317,-714.5 323,-714.5 329,-720.5 329,-726.5 329,-726.5 329,-738.5 329,-738.5 329,-744.5 323,-750.5 317,-750.5"/>
+<text text-anchor="start" x="111" y="-734.85" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.50">Stream → channel mass flow</text>
+<text text-anchor="start" x="73" y="-725.55" font-family="Helvetica,sans-Serif" font-size="9.00">analytical: ṁ_channel = f(ṁ_stream, a, b, s, D_o, D_i)</text>
 </g>
 <!-- gate1&#45;&gt;mdot -->
 <g id="edge3" class="edge">
 <title>gate1&#45;&gt;mdot</title>
-<path fill="none" stroke="#52514e" d="M262.68,-794.3C248.74,-781.4 233.1,-766.92 220.58,-755.33"/>
-<polygon fill="#52514e" stroke="#52514e" points="222.22,-753.51 215.42,-750.55 218.89,-757.11 222.22,-753.51"/>
-<text text-anchor="middle" x="251.5" y="-765.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;pass</text>
+<path fill="none" stroke="#52514e" d="M262.26,-794.56C248.03,-781.64 232.02,-767.1 219.19,-755.45"/>
+<polygon fill="#52514e" stroke="#52514e" points="220.73,-753.54 213.9,-750.65 217.43,-757.17 220.73,-753.54"/>
+<text text-anchor="middle" x="250.5" y="-765.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;pass</text>
 </g>
 <!-- fail -->
 <g id="node14" class="node">
@@ -93,8 +93,8 @@
 <!-- mdot&#45;&gt;gate2 -->
 <g id="edge4" class="edge">
 <title>mdot&#45;&gt;gate2</title>
-<path fill="none" stroke="#52514e" d="M181.57,-714.37C173.97,-705.92 164.57,-695.5 155.84,-685.8"/>
-<polygon fill="#52514e" stroke="#52514e" points="157.58,-684.07 151.07,-680.51 153.94,-687.35 157.58,-684.07"/>
+<path fill="none" stroke="#52514e" d="M180.02,-714.37C172.64,-705.92 163.53,-695.5 155.05,-685.8"/>
+<polygon fill="#52514e" stroke="#52514e" points="156.88,-684.17 150.42,-680.51 153.19,-687.39 156.88,-684.17"/>
 </g>
 <!-- build -->
 <g id="node6" class="node">

@@ -14,6 +14,14 @@ runApplication -o -s stage3 extrudeMesh -dict system/extrudeMeshDict.stage3
 runApplication -o topoSet
 runApplication -o createPatch -overwrite
 
+# stop on an invalid mesh instead of passing it to makeFaMesh and the solver
+# (checkMesh itself exits 0 even when mesh checks fail)
+runApplication -o checkMesh -noFunctionObjects
+if ! grep -q "^Mesh OK" log.checkMesh; then
+    echo "Mesh check failed, see log.checkMesh" >&2
+    exit 1
+fi
+
 runApplication restore0Dir
 
 runApplication decomposePar

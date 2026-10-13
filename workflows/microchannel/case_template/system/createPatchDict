@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox         |
-|  \\    /   O peration     | Version:  v2406                               |
+|  \\    /   O peration     | Version:  v2512                               |
 |   \\  /    A nd           | Website:  www.openfoam.com                    |
 |    \\/     M anipulation  |                                               |
 \*---------------------------------------------------------------------------*/
@@ -14,24 +14,14 @@ object createPatchDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Renames/splits extrudeMesh's generic "originalPatch"/"otherSide"/"sides"
-// patches into this case's actual boundary names. Run after topoSet has
-// built the centerPlaneFaces faceSet.
-//
-// thermalShell must be listed before centerPlane: createPatch resolves
-// overlapping claims on a face by last-entry-wins, and thermalShell's
-// "constructFrom patches (sides)" claims *all* of sides (including the
-// centerPlane subset) since it looks up original patch membership, not
-// what's already been claimed by earlier entries -- so centerPlane has to
-// come second to actually carve its faces back out.
 pointSync false;
 patches
 (
     {
         name thermalShell;
         patchInfo { type wall; }
-        constructFrom patches;
-        patches (sides);
+        constructFrom set;
+        set thermalShellFaces;
     }
     {
         name centerPlane;

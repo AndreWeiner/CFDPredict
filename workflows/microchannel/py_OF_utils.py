@@ -1,4 +1,8 @@
+'''
+Created on 23.05.2023
 
+@author: martin
+'''
 import random 
 import os 
 import shutil
@@ -143,11 +147,7 @@ def run_OF_utility(case_path, utility_name, params=[]):
 # the worker writes 9_error.txt with a clear message.
 
 _OF_ESI_VERSIONS = ["v2512", "v2506", "v2406", "v2312"]
-# (the /usr/lib/openfoam/openfoamXXXX .deb layout is also how the ESI
-# openfoam.com packages install -- e.g. openfoam2406, the version the
-# case_template is written for)
-_OF_FOUNDATION_VERSIONS = ["openfoam2512", "openfoam2506", "openfoam2406",
-                           "openfoam12",
+_OF_FOUNDATION_VERSIONS = ["openfoam2512", "openfoam2506", "openfoam12",
                            "openfoam11", "openfoam10", "openfoam9"]
 
 

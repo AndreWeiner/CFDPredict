@@ -236,8 +236,8 @@ def run_worker(series_path: str, *, do_source_of: bool = True,
         "Wheel          : N_rot=%.4g rpm -> period T=%.6g s, "
         "D_o=%.4g mm, D_i=%.4g mm"
         % (p.N_rot, p.period, p.D_outer, p.D_inner),
-        "Mass flow      : wheel %.6g kg/s over N_ch=%d channels -> "
-        "mdotIn=%.6g kg/s (half channel)" % (p.mdot_wheel, p.n_ch, p.mdot),
+        "Mass flow      : stream %.6g kg/s over N_ch/2 of N_ch=%d channels -> "
+        "mdotIn=%.6g kg/s (half channel)" % (p.mdot_stream, p.n_ch, p.mdot),
         "Temperatures   : hot in %.4g K, cold in %.4g K, shell init %.4g K"
         % (p.T_hot, p.T_cold, p.T_init),
         "Mesh           : refinement %.4g" % p.refinement,
@@ -367,7 +367,7 @@ def run_worker(series_path: str, *, do_source_of: bool = True,
             "N_rot": p.N_rot,
             "D_outer": p.D_outer,
             "D_inner": p.D_inner,
-            "mdot_wheel": p.mdot_wheel,
+            "mdot_stream": p.mdot_stream,
             "T_hot": p.T_hot, "T_cold": p.T_cold, "T_init_shell": p.T_init,
         },
         mesh_meta={

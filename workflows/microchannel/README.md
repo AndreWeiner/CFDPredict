@@ -41,7 +41,7 @@ Its values are the defaults listed in the table.
 | Operation | `wheel speed N_rot [rpm]` | 75 | period T = 60 / N_rot of the flow reversal |
 | | `wheel_outer_diameter D_o [mm]` | 300 | wheel face, used for the channel count |
 | | `wheel_inner_diameter D_i [mm]` | 0 | hub, used for the channel count |
-| | `wheel mass flow rate mdot [kg/s]` | 0.0444763 | wheel mass flow, split over the channels |
+| | `stream mass flow rate mdot [kg/s]` | 0.02223815 | mass flow of one stream, split over the channels of half the wheel face |
 | | `hot inlet temperature [K]` | 298 | T_h1, enters at the inlet patch (forward pass) |
 | | `cold inlet temperature [K]` | 278 | T_c1, enters at the outlet patch (reverse pass) |
 | | `initial temperature [K]` | 288 | initial foil (shell) temperature |
@@ -110,9 +110,9 @@ channel use the same signal, which reverses the flow every half period:
 
 ### 3.3 Mass flow through the simulated channel
 
-The input is the mass flow of the whole wheel. It is spread evenly over the
-channels on the wheel face, and the simulated domain is half of one
-channel.
+The input is the mass flow of one stream (hot or cold). Each stream passes
+half of the wheel face, so its flow is spread evenly over the channels in
+that half, and the simulated domain is half of one channel.
 
 ![One pitch cell and the simulated half channel](figure/channel_cell.png)
 
@@ -123,11 +123,11 @@ therefore occupies b (a + s) of the wheel face. The approximate total number of 
 N_{ch} = \frac{\pi \left(D_o^2 - D_i^2\right)}{4\, b\, (a + s)}
 ```
 
-The simulated domain is half of one channel, so it receives half of one
-channel's share:
+A stream passes N_ch/2 of these channels, and the simulated domain is half
+of one channel, so it receives
 
 ```math
-\dot m_{in} = \frac{\dot m_{wheel}}{2\, N_{ch}}
+\dot m_{in} = \frac{1}{2}\cdot\frac{\dot m_{stream}}{N_{ch}/2} = \frac{\dot m_{stream}}{N_{ch}}
 ```
 
 ---
@@ -300,8 +300,8 @@ both directions, constant c_p) at the periodic steady state, the foil
 stores no net heat per cycle, so the hot stream's drop equals the cold
 stream's rise, T_h1 − T_h2 = T_c2 − T_c1, and ε_h = ε_c.
 
-In the nominal run this equality is not reached exactly: ε_h = 0.668 and
-ε_c = 0.671, a persistent difference of about 0.35 % (Appendix A). The
+In the nominal run this equality is not reached exactly: ε_h = 0.670 and
+ε_c = 0.672, a persistent difference of about 0.33 % (Appendix A). The
 objective therefore uses the mean of both, which averages out this offset:
 
 ```math
@@ -394,43 +394,34 @@ cycle:
 
 | Cycle | Hot drop T_h1 − T_h2 [K] | Cold rise T_c2 − T_c1 [K] | Imbalance [K] | Imbalance [%] |
 |---|---|---|---|---|
-| 0 | 10.078 | 11.129 | −1.051 | −9.91 |
-| 1 | 11.259 | 11.759 | −0.500 | −4.35 |
-| 2 | 11.872 | 12.200 | −0.329 | −2.73 |
-| 3 | 12.286 | 12.526 | −0.239 | −1.93 |
-| 4 | 12.582 | 12.767 | −0.184 | −1.45 |
-| 5 | 12.797 | 12.945 | −0.148 | −1.15 |
-| 6 | 12.956 | 13.077 | −0.121 | −0.93 |
-| 7 | 13.072 | 13.173 | −0.101 | −0.77 |
-| 8 | 13.155 | 13.244 | −0.088 | −0.67 |
-| 9 | 13.220 | 13.296 | −0.076 | −0.57 |
-| 10 | 13.264 | 13.331 | −0.067 | −0.50 |
-| 11 | 13.301 | 13.361 | −0.060 | −0.45 |
-| 12 | 13.325 | 13.381 | −0.056 | −0.42 |
-| 13 | 13.343 | 13.394 | −0.051 | −0.38 |
-| 14 | 13.357 | 13.404 | −0.048 | −0.36 |
-| 15 | 13.366 | 13.413 | −0.046 | −0.35 |
+| 0 | 10.077 | 11.138 | −1.061 | −10.00 |
+| 1 | 11.266 | 11.771 | −0.505 | −4.39 |
+| 2 | 11.882 | 12.215 | −0.333 | −2.76 |
+| 3 | 12.299 | 12.542 | −0.243 | −1.96 |
+| 4 | 12.596 | 12.784 | −0.188 | −1.48 |
+| 5 | 12.812 | 12.963 | −0.150 | −1.17 |
+| 6 | 12.970 | 13.094 | −0.124 | −0.95 |
+| 7 | 13.086 | 13.190 | −0.104 | −0.79 |
+| 8 | 13.171 | 13.261 | −0.090 | −0.68 |
+| 9 | 13.234 | 13.312 | −0.079 | −0.59 |
+| 10 | 13.280 | 13.350 | −0.070 | −0.53 |
+| 11 | 13.314 | 13.377 | −0.063 | −0.47 |
+| 12 | 13.339 | 13.397 | −0.058 | −0.43 |
+| 13 | 13.358 | 13.411 | −0.054 | −0.40 |
+| 14 | 13.372 | 13.422 | −0.050 | −0.37 |
+| 15 | 13.382 | 13.429 | −0.047 | −0.35 |
+| 16 | 13.390 | 13.435 | −0.045 | −0.33 |
 
 - **Cycles 0 – 8**: the foil is still giving net heat to the gas; the
-  imbalance falls from −1.05 K to −0.09 K.
-- **Cycles 10 – 15**: the imbalance keeps shrinking, but ever more
-  slowly, and is still −0.046 K (−0.35 %) when the run stops.
+  imbalance falls from −1.06 K to −0.09 K.
+- **Cycles 10 – 16**: the imbalance keeps shrinking, but ever more
+  slowly, and is still −0.045 K (−0.33 %) when the run stops.
 
-To test whether the way the face temperatures are averaged plays a role,
-the run was restarted from its final state for two more cycles, recording
-both the area-averaged face temperatures used by the workflow and
-mass-flow-weighted ones (`absWeightedAverage` with `weightField phi`):
-
-| Cycle | Imbalance, area-averaged | Imbalance, flow-weighted | ε, area-averaged | ε, flow-weighted |
-|---|---|---|---|---|
-| 16 | −0.043 K (−0.32 %) | −0.043 K (−0.32 %) | 0.670 | 0.665 |
-| 17 | −0.040 K (−0.30 %) | −0.040 K (−0.30 %) | 0.670 | 0.665 |
-
-- The imbalance is the same with both averages, so it does not come from
-  the averaging.
-- Flow weighting lowers both the hot drop and the cold rise by about
-  0.095 K, and with them ε by about 0.005.
-- The imbalance continues to shrink by about 0.003 K per cycle.
+The imbalance does not come from how the face temperatures are averaged:
+with mass-flow-weighted face temperatures (`absWeightedAverage` with
+`weightField phi`) instead of area-averaged ones it is the same. Flow
+weighting lowers the hot drop and the cold rise by the same amount, and
+with them ε by about 0.005.
 
 ---
 

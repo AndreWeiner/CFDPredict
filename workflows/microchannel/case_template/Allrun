@@ -18,6 +18,14 @@ runApplication -o -s stage3 extrudeMesh -dict system/extrudeMeshDict.stage3
 runApplication -o topoSet
 runApplication -o createPatch -overwrite
 
+# stop on an invalid mesh instead of passing it to makeFaMesh and the solver
+# (checkMesh itself exits 0 even when mesh checks fail)
+runApplication -o checkMesh -noFunctionObjects
+if ! grep -q "^Mesh OK" log.checkMesh; then
+    echo "Mesh check failed, see log.checkMesh" >&2
+    exit 1
+fi
+
 restore0Dir
 
 runApplication makeFaMesh
@@ -25,10 +33,3 @@ runApplication makeFaMesh
 runApplication $(getApplication)
 
 #------------------------------------------------------------------------------
-
-## Parallel version (disabled: makeFaMesh -parallel segfaults in OF2406 libfaReconstruct)
-# restore0Dir
-# runApplication blockMesh
-# runParallel -s decompose redistributePar -decompose
-# runParallel makeFaMesh
-# runParallel $(getApplication)

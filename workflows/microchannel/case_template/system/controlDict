@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v2406                                 |
+|  \\    /   O peration     | Version:  v2512                                 |
 |   \\  /    A nd           | Website:  www.openfoam.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -184,9 +184,9 @@ functions
 
     // Shell (foil) temperature for the report images (pv_shell.py): the
     // finite-area field on the whole wetted wall, same T/4 grid and pruning
-    // as "slices". Only works inside the solver (the faMesh must exist), and
-    // v2406 writes each field twice -- the worker strips the copy before
-    // rendering (images.dedupe_vtp).
+    // as "slices". Only works inside the solver (the faMesh must exist).
+    // areaWrite can write each field twice -- the worker strips the copy
+    // before rendering (images.dedupe_vtp).
     shell
     {
         type            areaWrite;

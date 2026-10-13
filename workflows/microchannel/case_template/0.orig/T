@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v2406                                 |
+|  \\    /   O peration     | Version:  v2512                                 |
 |   \\  /    A nd           | Website:  www.openfoam.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -53,6 +53,9 @@ boundaryField
 
         region              outerShell;
         thermalShellModel   thermalShell;
+
+        Ts                  Ts_outerShell;
+        h                   h_outerShell;
 
         qr                  none;
         thickness           @SHELL_THICKNESS@;

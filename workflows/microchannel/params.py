@@ -26,7 +26,7 @@ class CaseParams:
     # wheel [mm], flow [kg/s] and temperatures [K]
     D_outer: float
     D_inner: float
-    mdot_wheel: float
+    mdot_stream: float
     T_hot: float
     T_cold: float
     T_init: float
@@ -52,7 +52,7 @@ class CaseParams:
             N_rot=float(j["wheel speed N_rot [rpm]"]),
             D_outer=float(j["wheel_outer_diameter D_o [mm]"]),
             D_inner=float(j["wheel_inner_diameter D_i [mm]"]),
-            mdot_wheel=float(j["wheel mass flow rate mdot [kg/s]"]),
+            mdot_stream=float(j["stream mass flow rate mdot [kg/s]"]),
             T_hot=float(j["hot inlet temperature [K]"]),
             T_cold=float(j["cold inlet temperature [K]"]),
             T_init=float(j["initial temperature [K]"]),
@@ -95,10 +95,10 @@ class CaseParams:
 
     @property
     def mdot(self) -> float:
-        """mdotIn of the meshed domain [kg/s]. The wheel's flow splits over
-        N_ch channels and the domain is HALF a channel (symmetryPlane):
-        mdotIn = mdot_wheel / (2 N_ch)."""
-        return self.mdot_wheel / (2.0 * self.n_ch)
+        """mdotIn of the meshed domain [kg/s]. Each stream passes half the
+        wheel face, so it splits over N_ch/2 channels, and the domain is
+        HALF a channel (symmetryPlane): mdotIn = mdot_stream / N_ch."""
+        return self.mdot_stream / self.n_ch
 
     @property
     def case_name(self) -> str:

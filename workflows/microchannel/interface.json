@@ -39,9 +39,9 @@
     23, 0.0, "float", ["0"], null,
     "Wheel inner (hub) diameter, 0 <= D_i < D_o. Sets the channel count N_ch and hence the per-channel mass flow (see mdot)."
   ],
-  "wheel mass flow rate mdot [kg/s]": [
-    24, 0.0444763, "float", ["0.0444763"], null,
-    "Inlet mass flow of the WHOLE wheel. Split over N_ch = pi(Do^2 - Di^2) / (4 b (a + s)) channels; the half-channel domain gets mdot / (2 N_ch)."
+  "stream mass flow rate mdot [kg/s]": [
+    24, 0.02223815, "float", ["0.02223815"], null,
+    "Mass flow of ONE stream (hot or cold). It passes half the wheel face, i.e. N_ch/2 of the N_ch = pi(Do^2 - Di^2) / (4 b (a + s)) channels; the half-channel domain gets mdot / N_ch."
   ],
   "hot inlet temperature [K]": [
     25, 298.0, "float", ["298"], null,

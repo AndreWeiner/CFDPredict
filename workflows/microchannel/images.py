@@ -75,9 +75,9 @@ def pick_phase_dirs(case_dir: Path, fo: str, period: float,
 
 def dedupe_vtp(path: Path) -> int:
     """Drop repeated same-name DataArrays from a VTK XML file in place;
-    returns how many were dropped. v2406's areaWrite writes every area
-    field twice (its DimensionedField pass matches the GeometricField too,
-    objectRegistry::names<T> is non-strict), and ParaView 5.12's XML reader
+    returns how many were dropped. areaWrite can write every area field
+    twice (its DimensionedField pass matches the GeometricField too,
+    objectRegistry::names<T> is non-strict), and ParaView's XML reader
     segfaults on the duplicate. Both copies are identical."""
     text = path.read_text(encoding="utf-8")
     dropped = 0

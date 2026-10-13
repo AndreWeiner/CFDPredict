@@ -13,7 +13,7 @@
   "wheel speed N_rot [rpm]": 75.0,
   "wheel_outer_diameter D_o [mm]": 300.0,
   "wheel_inner_diameter D_i [mm]": 0.0,
-  "wheel mass flow rate mdot [kg/s]": 0.0444763,
+  "stream mass flow rate mdot [kg/s]": 0.02223815,
   "hot inlet temperature [K]": 298.0,
   "cold inlet temperature [K]": 278.0,
   "initial temperature [K]": 288.0,

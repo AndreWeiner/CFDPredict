@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v2406                                 |
+|  \\    /   O peration     | Version:  v2512                                 |
 |   \\  /    A nd           | Website:  www.openfoam.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@ contactHeatFlux
     region          outerShell;
     selectionMode   all;
 
-    T               Ts_outerShell;
+    Ts              Ts_outerShell;
     Tprimary        T;
 
     kappaMethod     fluidThermo;

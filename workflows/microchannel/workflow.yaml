@@ -5,7 +5,7 @@ python_exec: ""
 input_filename: interface.json
 schema_file: interface.json
 inject_schema: true
-version: v2406
+version: v2512
 uploads: false
 
 max_concurrent_per_user: 1
