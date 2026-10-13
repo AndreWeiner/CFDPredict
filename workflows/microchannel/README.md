@@ -94,13 +94,17 @@ As the wheel turns, a channel spends half a revolution in the hot stream
 and half in the cold stream, which flows the opposite way. One revolution
 is one period of the simulation:
 
-$$T = \frac{60}{N_{rot}} \quad [\mathrm{s}]$$
+```math
+T = \frac{60}{N_{rot}} \quad [\mathrm{s}]
+```
 
 The period drives the **velocity boundary condition**. Both ends of the
 channel use the same signal, which reverses the flow every half period:
 
-$$\dot m(t) = \dot m_{in}\, \tanh\!\left(\sin\!\left(\frac{2\pi t}{T}\right) T_s\right),
-\qquad T_s = 10$$
+```math
+\dot m(t) = \dot m_{in}\, \tanh\!\left(\sin\!\left(\frac{2\pi t}{T}\right) T_s\right),
+\qquad T_s = 10
+```
 
 ![Inlet mass flow over two periods](figure/inlet_signal.png)
 
@@ -115,12 +119,16 @@ channel.
 One pitch of the corrugation is 2b wide and a + s high and holds **two** channels: the lower channel and two halves of the inverted upper channel. Each channel
 therefore occupies b (a + s) of the wheel face. The approximate total number of channels can then be evaluated using:
 
-$$N_{ch} = \frac{\pi \left(D_o^2 - D_i^2\right)}{4\, b\, (a + s)}$$
+```math
+N_{ch} = \frac{\pi \left(D_o^2 - D_i^2\right)}{4\, b\, (a + s)}
+```
 
 The simulated domain is half of one channel, so it receives half of one
 channel's share:
 
-$$\dot m_{in} = \frac{\dot m_{wheel}}{2\, N_{ch}}$$
+```math
+\dot m_{in} = \frac{\dot m_{wheel}}{2\, N_{ch}}
+```
 
 ---
 
@@ -176,9 +184,11 @@ and how much each changed against the previous cycle. Each cycle is added
 to `progress/1_info.txt`. The case counts as steady when all three changes
 are below their tolerance (`STEADY_TOL`):
 
-$$|\Delta\, dP_{avg}| < 0.01\ \mathrm{Pa}, \qquad
+```math
+|\Delta\, dP_{avg}| < 0.01\ \mathrm{Pa}, \qquad
 |\Delta\, dT_{forward}| < 0.01\ \mathrm{K}, \qquad
-|\Delta\, dT_{reverse}| < 0.01\ \mathrm{K}$$
+|\Delta\, dT_{reverse}| < 0.01\ \mathrm{K}
+```
 
 The solver is then stopped and the results of the last complete cycle are
 written.
@@ -279,8 +289,10 @@ The sensible effectiveness is the temperature change of one stream divided
 by the largest possible change, the difference of the two inlet
 temperatures. It can be evaluated on either stream:
 
-$$\varepsilon_h = \frac{T_{h1} - T_{h2}}{T_{h1} - T_{c1}}, \qquad
-\varepsilon_c = \frac{T_{c2} - T_{c1}}{T_{h1} - T_{c1}}$$
+```math
+\varepsilon_h = \frac{T_{h1} - T_{h2}}{T_{h1} - T_{c1}}, \qquad
+\varepsilon_c = \frac{T_{c2} - T_{c1}}{T_{h1} - T_{c1}}
+```
 
 with T_h1 / T_c1 the hot / cold inlet temperatures and T_h2 / T_c2 the
 outlet temperatures of the two streams. For balanced flow (the same ṁ in
@@ -292,8 +304,10 @@ In the nominal run this equality is not reached exactly: ε_h = 0.668 and
 ε_c = 0.671, a persistent difference of about 0.35 % (Appendix A). The
 objective therefore uses the mean of both, which averages out this offset:
 
-$$\varepsilon = \frac{\varepsilon_h + \varepsilon_c}{2}
- = \frac{dT_{forward} + dT_{reverse}}{2\,(T_{hot} - T_{cold})}$$
+```math
+\varepsilon = \frac{\varepsilon_h + \varepsilon_c}{2}
+= \frac{dT_{forward} + dT_{reverse}}{2\,(T_{hot} - T_{cold})}
+```
 
 where `dT_forward` = T_h1 − T_h2 and `dT_reverse` = T_c2 − T_c1 are the
 mean inlet-to-outlet temperature differences of the forward and reverse
@@ -343,9 +357,11 @@ reduces to one linear condition: the half-wavelength must leave room for
 the crest fillet (radius R) and the trough fillet (radius R + s) side by
 side,
 
-$$b - 2R - s \;\ge\; \delta, \qquad \delta = 0.01\ \mathrm{mm}$$
+```math
+b - 2R - s \;\ge\; \delta, \qquad \delta = 0.01\ \mathrm{mm}
+```
 
-The gate fails exactly on b = 2R + s, hence the small margin δ. Inside the
+On the line b = 2R + s the result depends on round-off, hence the small margin δ. Inside the
 practical bounds the constraint never becomes active (the smallest b,
 1.5 mm, exceeds the largest 2R + s, 1.10 mm), but it is passed to the
 optimiser anyway: it costs nothing and keeps the study safe if the bounds
@@ -438,7 +454,9 @@ mainly two reject a geometry as not manufacturable:
   centres are b apart horizontally and a − 2R − 2s vertically, so T1 fails
   when
 
-  $$b^2 + (a - 2R - 2s)^2 < (2R + s)^2$$
+  ```math
+  b^2 + (a - 2R - 2s)^2 < (2R + s)^2
+  ```
 
   a disc in the (b, a) plane around a = 2R + 2s: medium-height channels,
   where the two centres sit nearly level.
@@ -470,7 +488,9 @@ test shows that the converse holds as well: every point below the line
 fails and every point above it passes. The gate therefore reduces to the
 single linear condition
 
-$$b - 2R - s > 0$$
+```math
+b - 2R - s > 0
+```
 
 On the line itself the result depends on round-off, so a small margin is
 used: b − 2R − s ≥ δ with δ = 0.01 mm.
