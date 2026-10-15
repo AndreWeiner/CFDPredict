@@ -22,7 +22,7 @@ FO_DT = "delta_T"                 # multiFieldValue: T(inlet) - T(outlet)
 # Fractions of the period T: the inlet ramp tanh(sin(2*pi*t/T) * Ts) scales
 # with T (99 % reached 0.043*T after a reversal at Ts = 10), so a fixed time
 # trim would cut into the plateau at high N_rot and keep the ramp at low N_rot.
-# The values reproduce the former 0.08 s / 0.05 s at N_rot = 75 (T = 0.8 s).
+# At N_rot = 12 (T = 5 s) they discard 0.5 s / 0.31 s at each end.
 DP_TRIM_FRAC = 0.10      # [-] of T, discarded at each end of a pass
 DT_TRIM_FRAC = 0.0625    # [-] of T
 

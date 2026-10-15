@@ -29,26 +29,28 @@ Results are written to `runs/microchannel_default/`.
 
 A run is driven by a JSON input file. The nominal channel is given in
 [`examples/microchannel_default.json`](../../examples/microchannel_default.json).
-Its values are the defaults listed in the table.
+Its values are the defaults listed in the table: the heat wheel HX5 of
+Zmrhal et al. [1, 2] at its lowest airflow, 1 400 m³/h per stream, and the
+standard speed of 12 rpm. The papers do not give R; 0.32 mm is assumed.
 
 | Group | Field | Default | Role |
 |---|---|---|---|
-| Geometry | `channel height a [mm]` | 1.55 | height to the outer crest of the foil |
-| | `half-wavelength b [mm]` | 1.69 | crest at x = 0, trough at x = b |
+| Geometry | `channel height a [mm]` | 1.6 | height to the outer crest of the foil |
+| | `half-wavelength b [mm]` | 1.88 | crest at x = 0, trough at x = b |
 | | `crest fillet radius R [mm]` | 0.32 | forming-tool radius |
 | | `foil gauge s [mm]` | 0.05 | **full** foil thickness t |
-| | `channel length l [mm]` | 60 | wheel depth = Z extrusion length |
-| Operation | `wheel speed N_rot [rpm]` | 75 | period T = 60 / N_rot of the flow reversal |
-| | `wheel_outer_diameter D_o [mm]` | 300 | wheel face, used for the channel count |
-| | `wheel_inner_diameter D_i [mm]` | 0 | hub, used for the channel count |
-| | `stream mass flow rate mdot [kg/s]` | 0.02223815 | mass flow of one stream, split over the channels of half the wheel face |
+| | `channel length l [mm]` | 110 | wheel depth = Z extrusion length |
+| Operation | `wheel speed N_rot [rpm]` | 12 | period T = 60 / N_rot of the flow reversal |
+| | `wheel_outer_diameter D_o [mm]` | 1010 | wheel face, used for the channel count |
+| | `wheel_inner_diameter D_i [mm]` | 120 | hub, used for the channel count |
+| | `stream mass flow rate mdot [kg/s]` | 0.46666667 | mass flow of one stream, split over the channels of half the wheel face |
 | | `hot inlet temperature [K]` | 298 | T_h1, enters at the inlet patch (forward pass) |
 | | `cold inlet temperature [K]` | 278 | T_c1, enters at the outlet patch (reverse pass) |
 | | `initial temperature [K]` | 288 | initial foil (shell) temperature |
 | Mesh & solver | `mesh refinement r` | 1.0 | mesh density; cell sizes scale as 1/r |
-| | `maxCo` | 3 | Courant limit of the adjustable time step |
-| | `nCorrectors` | 8 | PIMPLE pressure correctors |
-| | `end time [s]` | 50 | hard limit on simulated time |
+| | `maxCo` | 1 | Courant limit of the adjustable time step |
+| | `nCorrectors` | 2 | PIMPLE pressure correctors |
+| | `end time [s]` | 150 | hard limit on simulated time |
 | Run-time | `number of processors` | 12 | MPI ranks (1 = serial) |
 
 ---
@@ -300,8 +302,8 @@ both directions, constant c_p) at the periodic steady state, the foil
 stores no net heat per cycle, so the hot stream's drop equals the cold
 stream's rise, T_h1 − T_h2 = T_c2 − T_c1, and ε_h = ε_c.
 
-In the nominal run this equality is not reached exactly: ε_h = 0.670 and
-ε_c = 0.672, a persistent difference of about 0.33 % (Appendix A). The
+In the nominal run this equality is not reached exactly: ε_h = 0.772 and
+ε_c = 0.774, a remaining difference of about 0.30 % (Appendix A). The
 objective therefore uses the mean of both, which averages out this offset:
 
 ```math
@@ -311,11 +313,7 @@ objective therefore uses the mean of both, which averages out this offset:
 
 where `dT_forward` = T_h1 − T_h2 and `dT_reverse` = T_c2 − T_c1 are the
 mean inlet-to-outlet temperature differences of the forward and reverse
-pass. For the nominal run, ε = 0.6695.
-
-The BO model predicts a single value, so the two objectives are combined
-with ParEGO, which merges them into one value using randomly chosen weights
-in every iteration.
+pass. For the nominal run, ε = 0.7733 and dP_avg = 29.96 Pa.
 
 ### 7.4 Failed and infeasible cases
 
@@ -389,39 +387,33 @@ Inside the practical bounds no point is rejected.
 For balanced flow (the same ṁ both ways; constant c_p, which holds here)
 at a periodic steady state, the foil stores no net heat per cycle, so the
 hot drop T_h1 − T_h2 must equal the cold rise T_c2 − T_c1 and ε_h = ε_c
-(sec. 7.3). The nominal run shows a small, persistent difference, cycle by
-cycle:
+(sec. 7.3). The nominal run shows a small difference that decays only
+slowly, cycle by cycle:
 
 | Cycle | Hot drop T_h1 − T_h2 [K] | Cold rise T_c2 − T_c1 [K] | Imbalance [K] | Imbalance [%] |
 |---|---|---|---|---|
-| 0 | 10.077 | 11.138 | −1.061 | −10.00 |
-| 1 | 11.266 | 11.771 | −0.505 | −4.39 |
-| 2 | 11.882 | 12.215 | −0.333 | −2.76 |
-| 3 | 12.299 | 12.542 | −0.243 | −1.96 |
-| 4 | 12.596 | 12.784 | −0.188 | −1.48 |
-| 5 | 12.812 | 12.963 | −0.150 | −1.17 |
-| 6 | 12.970 | 13.094 | −0.124 | −0.95 |
-| 7 | 13.086 | 13.190 | −0.104 | −0.79 |
-| 8 | 13.171 | 13.261 | −0.090 | −0.68 |
-| 9 | 13.234 | 13.312 | −0.079 | −0.59 |
-| 10 | 13.280 | 13.350 | −0.070 | −0.53 |
-| 11 | 13.314 | 13.377 | −0.063 | −0.47 |
-| 12 | 13.339 | 13.397 | −0.058 | −0.43 |
-| 13 | 13.358 | 13.411 | −0.054 | −0.40 |
-| 14 | 13.372 | 13.422 | −0.050 | −0.37 |
-| 15 | 13.382 | 13.429 | −0.047 | −0.35 |
-| 16 | 13.390 | 13.435 | −0.045 | −0.33 |
+| 0 | 10.069 | 14.047 | −3.978 | −32.99 |
+| 1 | 13.980 | 15.141 | −1.161 | −7.97 |
+| 2 | 14.864 | 15.485 | −0.621 | −4.09 |
+| 3 | 15.168 | 15.567 | −0.399 | −2.60 |
+| 4 | 15.291 | 15.571 | −0.280 | −1.82 |
+| 5 | 15.350 | 15.555 | −0.205 | −1.32 |
+| 6 | 15.384 | 15.536 | −0.152 | −0.98 |
+| 7 | 15.407 | 15.520 | −0.113 | −0.73 |
+| 8 | 15.423 | 15.507 | −0.084 | −0.55 |
+| 9 | 15.434 | 15.497 | −0.063 | −0.40 |
+| 10 | 15.443 | 15.489 | −0.046 | −0.30 |
 
-- **Cycles 0 – 8**: the foil is still giving net heat to the gas; the
-  imbalance falls from −1.06 K to −0.09 K.
-- **Cycles 10 – 16**: the imbalance keeps shrinking, but ever more
-  slowly, and is still −0.045 K (−0.33 %) when the run stops.
+- **Cycles 0 – 4**: the foil is still giving net heat to the gas; the
+  imbalance falls from −3.98 K to −0.28 K.
+- **Cycles 5 – 10**: the imbalance keeps shrinking by a constant factor of
+  about 0.74 per cycle, and is still −0.046 K (−0.30 %) when the run stops.
 
 The imbalance does not come from how the face temperatures are averaged:
 with mass-flow-weighted face temperatures (`absWeightedAverage` with
 `weightField phi`) instead of area-averaged ones it is the same. Flow
 weighting lowers the hot drop and the cold rise by the same amount, and
-with them ε by about 0.005.
+with them ε.
 
 ---
 

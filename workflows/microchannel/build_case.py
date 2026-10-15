@@ -56,7 +56,7 @@ GRAD_Z_DIVISIONS = [(0.2, 0.30, 10.0), (0.6, 0.40, 1.0), (0.2, 0.30, 0.1)]
 # Report slices (controlDict "slices", pv_slices.py): z positions as
 # fractions of l. They land exactly on Z layer faces (stage boundaries at
 # 0.2/0.8 l, whole cells in the uniform middle stage), where cuttingPlane is
-# ill-defined, so the planes are nudged by SLICE_NUDGE * l (6 um at l = 60).
+# ill-defined, so the planes are nudged by SLICE_NUDGE * l (11 um at l = 110).
 SLICE_Z_FRACS = (0.2, 0.4, 0.6, 0.8)
 SLICE_NUDGE = 1e-4
 

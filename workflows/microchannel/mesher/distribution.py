@@ -5,15 +5,15 @@ Three sizing rules, each matched to what the edge it sizes actually is:
 * **across the band** -- a layer count set at refinement 1 from the band's
   depth ``h`` (:func:`band_layers`), scaled linearly by ``refinement``,
   graded fine at the wall. ``h`` is set by the cut, not by the domain, so
-  the per-mm budget cannot size it: ``h * NY_PER_MM`` is under one cell at
-  the nominal. One array (:attr:`Sizing.band_fr`) serves every edge that
+  the per-mm budget cannot size it: ``h * NY_PER_MM`` is under one cell
+  (0.96 at h = 0.08 mm, a = 1.6 mm). One array (:attr:`Sizing.band_fr`) serves every edge that
   spans the depth.
 * **along the floor** -- see ``CutMesh.build_cut_mesh``.
 * **along the wall** -- the hypotenuse's own arclength against the global
   target cell (:func:`wall_fractions`), split piece by piece: each fillet
   by the angle it sweeps, the flank as the slack between them. Sizing the
   wall off the height's budget instead under-resolves it by the slant
-  factor (1.55x at the nominal) and folds TFI cells at the crest.
+  factor (1.55x at a = 1.55, b = 1.69 mm) and folds TFI cells at the crest.
 """
 import math
 from dataclasses import dataclass
@@ -54,7 +54,7 @@ BAND_MIN_LAYERS_REF1 = 3
 # Curvature weighting on the wall: the arcs claim a share of the cell
 # budget larger than their share of the length,
 #     share = (L_arc/L) * (1 + g) / (1 + g * L_arc/L)
-# so g = 0 is purely length-proportional. At g = 1 the nominal's arcs get
+# so g = 0 is purely length-proportional. At g = 1 the arcs of a = 1.55, b = 1.69 mm get
 # 28% of the cells for 15% of the length (crest 7.9 deg/cell); g = 3 gave
 # a 5.3 deg/cell crest, 2.8x finer than the target cell. SAG_TOL below
 # still guarantees the chord error, so coarsening here cannot starve an arc.
