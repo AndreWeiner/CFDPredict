@@ -1,0 +1,9 @@
+// Shared expression-variable definitions for the oscillating mass-flow inlet/
+// outlet BCs (see U, p_rgh). #include'd into each patch's "variables" list so
+// mdotIn/T/Ts have exactly one source of truth instead of being hand-copied
+// into every block -- lives in 0.orig/ (not system/) so it travels alongside
+// U/p_rgh when restore0Dir copies 0.orig/ -> 0/, since #include resolves
+// relative to the referencing file's directory.
+"mdotIn = @MDOT_IN@" // mean inflow/outflow mass flow rate [kg/s], half-domain (symmetryPlane)
+"T = @PERIOD@"      // period, one complete inflow-outflow cycle
+"Ts     = 10.0"     // reducing Ts leads to a smoother alternation of the flow direction

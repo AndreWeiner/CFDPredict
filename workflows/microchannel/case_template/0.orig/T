@@ -1,0 +1,69 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      T;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [ 0 0 0 1 0 0 0 ];
+internalField   uniform 278;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    inlet
+    {
+        type            inletOutlet;
+        value           uniform @T_HOT@;
+        inletValue      uniform @T_HOT@;
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        value           uniform @T_COLD@;
+        inletValue      uniform @T_COLD@;
+    }
+
+    thermalShell
+    {
+        type                compressible::thermalShell;
+        active              true;
+        T                   T;
+
+        thermo
+        {
+            W               26.98;
+            rho             2710;
+            kappa           210;
+            Cp              900;
+            Hf              0;
+            emissivity      0;
+        }
+
+        region              outerShell;
+        thermalShellModel   thermalShell;
+
+        Ts                  Ts_outerShell;
+        h                   h_outerShell;
+
+        qr                  none;
+        thickness           @SHELL_THICKNESS@;
+
+        value               $internalField;
+    }
+
+}
+
+
+// ************************************************************************* //

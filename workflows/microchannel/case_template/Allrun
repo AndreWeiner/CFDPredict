@@ -1,0 +1,35 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+# --- mesh: extrude the 2D cross-section in Z, then split/rename the
+# boundary patches. build_case.py writes constant/triSurface/mesh.obj (the 2D
+# cross-section, pre-scaled to metres) and one extrudeMeshDict.stageN per Z
+# division (graded fine-coarse-fine; the stages chain through the
+# "otherSide" patch); topoSet/createPatch then split/rename the patches to
+# match the field files. These five steps always re-run (-o): they are
+# cheap, deterministic, and form one chain, so partial reuse (a stale mesh
+# with unrenamed patches) is worse than the few seconds they cost.
+runApplication -o -s stage1 extrudeMesh -dict system/extrudeMeshDict.stage1
+runApplication -o -s stage2 extrudeMesh -dict system/extrudeMeshDict.stage2
+runApplication -o -s stage3 extrudeMesh -dict system/extrudeMeshDict.stage3
+
+runApplication -o topoSet
+runApplication -o createPatch -overwrite
+
+# stop on an invalid mesh instead of passing it to makeFaMesh and the solver
+# (checkMesh itself exits 0 even when mesh checks fail)
+runApplication -o checkMesh -noFunctionObjects
+if ! grep -q "^Mesh OK" log.checkMesh; then
+    echo "Mesh check failed, see log.checkMesh" >&2
+    exit 1
+fi
+
+restore0Dir
+
+runApplication makeFaMesh
+
+runApplication $(getApplication)
+
+#------------------------------------------------------------------------------

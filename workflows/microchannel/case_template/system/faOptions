@@ -1,0 +1,34 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      faOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// contactHeatFluxSource is the coupling of the shell-2D and the 3D mesh
+contactHeatFlux
+{
+    type            contactHeatFluxSource;
+    active          true;
+    region          outerShell;
+    selectionMode   all;
+
+    Ts              Ts_outerShell;
+    Tprimary        T;
+
+    kappaMethod     fluidThermo;
+
+    //thicknessLayers (0.005);
+    //kappaLayers     (50);
+}
+
+
+//************************************************************************** //

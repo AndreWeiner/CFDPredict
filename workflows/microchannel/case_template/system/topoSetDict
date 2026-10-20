@@ -1,0 +1,50 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox         |
+|  \\    /   O peration     | Version:  v2512                               |
+|   \\  /    A nd           | Website:  www.openfoam.com                    |
+|    \\/     M anipulation  |                                               |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+version     2.0;
+format ascii;
+class dictionary;
+object topoSetDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+actions
+(
+    {
+        name    centerPlaneFaces;
+        type    faceSet;
+        action  new;
+        source  patchToFace;
+        patch   sides;
+    }
+    {
+        name    centerPlaneFaces;
+        type    faceSet;
+        action  subset;
+        source  boxToFace;
+        box     (-1e-6 -1e6 -1e6) (1e-6 1e6 1e6);
+    }
+
+    {
+        name    thermalShellFaces;
+        type    faceSet;
+        action  new;
+        source  patchToFace;
+        patch   sides;
+    }
+    {
+        name    thermalShellFaces;
+        type    faceSet;
+        action  subtract;
+        source  faceToFace;
+        set     centerPlaneFaces;
+    }
+);
+
+// ************************************************************************* //

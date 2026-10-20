@@ -1,0 +1,75 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default         Euler;
+}
+
+gradSchemes
+{
+    default         Gauss linear;
+}
+
+    divSchemes
+    {
+        default         none;
+        /*
+        div(phi,U)      Gauss linearUpwind grad(U);
+        div(phi,T)      Gauss linearUpwind grad(T);
+        div(phi,h)      Gauss linearUpwind grad(h);
+        div(phi,k)      Gauss linearUpwind grad(k);
+        div(phi,epsilon) Gauss linearUpwind grad(epsilon);
+        div(phi,omega)  Gauss linearUpwind grad(omega);
+        div((nuEff*dev2(T(grad(U))))) Gauss linear;
+        div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+        div(phiv,p)     Gauss linear;
+        div(phi,K)      Gauss linear;
+        div(phi,e)      Gauss linearUpwind grad(e);
+        */
+        div(phi,U)      Gauss limitedLinearV 1;
+        div(phi,T)      Gauss linearUpwind grad(T);
+        div(phi,h)      Gauss limitedLinear 1;
+        div(phi,k)      Gauss linearUpwind grad(k);
+        div(phi,epsilon) Gauss linearUpwind grad(epsilon);
+        div(phi,omega)  Gauss linearUpwind grad(omega);
+        div((nuEff*dev2(T(grad(U))))) Gauss linear;
+        div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+        div(phiv,p)     Gauss limitedLinear 1;
+        div(phi,K)      Gauss limitedLinear 1;
+        div(phi,e)      Gauss limitedLinear 1;
+
+    }
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+    laplacian(nuEff,U) Gauss linear corrected;
+    laplacian((rho*nuEff),U) Gauss linear corrected;
+    laplacian(alphaEff,T) Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;
+}
+
+// ************************************************************************* //
