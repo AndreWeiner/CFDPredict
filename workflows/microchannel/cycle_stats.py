@@ -27,10 +27,11 @@ DP_TRIM_FRAC = 0.10      # [-] of T, discarded at each end of a pass
 DT_TRIM_FRAC = 0.0625    # [-] of T
 
 # Quasi-steady stop: kill the solver once each output has changed by less
-# than its ABSOLUTE tolerance against the previous cycle.
+# than its ABSOLUTE tolerance against the previous cycle. eps is the mean of
+# the forward and reverse values, which approach each other from opposite
+# sides, so it settles before either of them.
 STEADY_TOL = {"dP_avg_change": 0.01,         # [Pa]
-              "dT_forward_change": 0.01,     # [K]
-              "dT_reverse_change": 0.01}     # [K]
+              "eps_change": 5e-4}            # [-]
 
 
 def series(case, name):
@@ -104,15 +105,18 @@ def _change(values: np.ndarray, i: int) -> float | None:
     return float(values[i] - values[i - 1])
 
 
-def steady_cycle_stats(case_dir: Path, period: float) -> dict:
+def steady_cycle_stats(case_dir: Path, period: float, span: float) -> dict:
     """dP_avg / dT_forward / dT_reverse over the last complete cycle, plus
-    that cycle's change against the one before (is it settled?). All None
-    when the run did not complete a cycle."""
+    that cycle's change against the one before (is it settled?). span =
+    T_hot - T_cold turns the dT into the effectiveness (eps_change, and
+    eps_imbalance = eps_forward - eps_reverse, the part of the foil's heat
+    storage that is still unbalanced). All None when the run did not
+    complete a cycle."""
     out = dict(dP_avg=None, dP_forward=None, dP_reverse=None,
                dT_forward=None, dT_reverse=None, steady_cycle=None,
                n_cycles=0, t_end=None,
                dP_avg_change=None, dT_forward_change=None,
-               dT_reverse_change=None)
+               dT_reverse_change=None, eps_change=None, eps_imbalance=None)
     t_p, v_p = series(case_dir, FO_DP)
     t_T, v_T = series(case_dir, FO_DT)
     if t_p is None or t_T is None:
@@ -137,6 +141,10 @@ def steady_cycle_stats(case_dir: Path, period: float) -> dict:
         dT_forward_change=_change(T_f, j),
         dT_reverse_change=_change(T_r, j),
     )
+    if span > 0:
+        eps_mean = 0.5 * (T_f + T_r) / span
+        out.update(eps_change=_change(eps_mean, j),
+                   eps_imbalance=float((T_f[j] - T_r[j]) / span))
     return out
 
 
@@ -148,8 +156,7 @@ def outputs(stats: dict, T_hot: float, T_cold: float) -> dict:
         eps_reverse = dT_reverse / (T_hot - T_cold)   (cold stream)
         eps         = (eps_forward + eps_reverse) / 2
 
-    Convergence stays tracked on the dT (dT_forward_change /
-    dT_reverse_change, the STEADY_TOL criterion)."""
+    Convergence is tracked on eps (eps_change, the STEADY_TOL criterion)."""
     out = {k: v for k, v in stats.items()
            if k not in ("dT_forward", "dT_reverse")}
     span = T_hot - T_cold
@@ -163,7 +170,7 @@ def outputs(stats: dict, T_hot: float, T_cold: float) -> dict:
 
 
 def is_steady(stats: dict) -> bool:
-    """Every output changed by less than its STEADY_TOL against the previous
-    cycle (needs two complete cycles)."""
+    """dP_avg and eps changed by less than their STEADY_TOL against the
+    previous cycle (needs two complete cycles)."""
     return all(stats[k] is not None and abs(stats[k]) < tol
                for k, tol in STEADY_TOL.items())

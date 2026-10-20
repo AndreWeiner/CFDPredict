@@ -277,7 +277,7 @@ def run_worker(series_path: str, *, do_source_of: bool = True,
     # marker file so ParaView -> File > Open finds the case
     (case_dir / "case.foam").touch()
 
-    stats = steady_cycle_stats(case_dir, p.period)   # all None until solved
+    stats = steady_cycle_stats(case_dir, p.period, p.T_hot - p.T_cold)   # all None until solved
     stop_reason = t_stop = None
     if do_run:
         if killed(series_path):
@@ -292,17 +292,19 @@ def run_worker(series_path: str, *, do_source_of: bool = True,
         def on_cycle(st):
             o = outputs(st, p.T_hot, p.T_cold)
             info.append("    cycle %d: dP_avg=%s Pa  eps=%s  "
-                        "(change %s Pa / %s K / %s K)"
+                        "imbalance(eps_f-eps_r)=%s  "
+                        "(change %s Pa / %s)"
                         % (o["steady_cycle"], _fmt(o["dP_avg"]),
                            _fmt(o["eps"], ".5f"),
+                           _fmt(o["eps_imbalance"], "+.5f"),
                            _fmt(o["dP_avg_change"], "+.4f"),
-                           _fmt(o["dT_forward_change"], "+.4f"),
-                           _fmt(o["dT_reverse_change"], "+.4f")))
+                           _fmt(o["eps_change"], "+.5f")))
             update_progress(progress_path, info)
 
         try:
             stop_reason = run_case(series_path, case_dir, n_proc=p.n_proc,
-                                   period=p.period, on_cycle=on_cycle)
+                                   period=p.period, span=p.T_hot - p.T_cold,
+                                   on_cycle=on_cycle)
         except Exception as exc:
             info.append("\n>>> CASE FAILED: %s" % exc)
             info.append(">>> Job is marked as failed (progress/9_error.txt).")
@@ -323,21 +325,21 @@ def run_worker(series_path: str, *, do_source_of: bool = True,
         t_stop = solver_end_time(case_dir)
         info.append("    solver stopped at t = %s s (endTime %.4g s): %s"
                     % (_fmt(t_stop, ".6g"), p.end_time,
-                       "quasi-steady, change < %g Pa / %g K / %g K -- killed"
+                       "quasi-steady, change < %g Pa / %g eps -- killed"
                        % tuple(STEADY_TOL.values()) if stop_reason == "steady"
                        else "ran to endTime, not steady by the criterion"))
-        stats = steady_cycle_stats(case_dir, p.period)
+        stats = steady_cycle_stats(case_dir, p.period, p.T_hot - p.T_cold)
         info.append("    steady cycle k=%s of %d (t_end=%s s):"
                     % (stats["steady_cycle"], stats["n_cycles"],
                        _fmt(stats["t_end"], ".4g")))
         o = outputs(stats, p.T_hot, p.T_cold)
         info.append("      dP_avg=%s Pa  eps=%s"
                     % (_fmt(o["dP_avg"]), _fmt(o["eps"], ".5f")))
-        info.append("      change vs previous cycle: dP_avg %s Pa, "
-                    "dT_forward %s K, dT_reverse %s K"
+        info.append("      remaining imbalance eps_f - eps_r = %s"
+                    % _fmt(o["eps_imbalance"], "+.5f"))
+        info.append("      change vs previous cycle: dP_avg %s Pa, eps %s"
                     % (_fmt(o["dP_avg_change"], "+.4f"),
-                       _fmt(o["dT_forward_change"], "+.4f"),
-                       _fmt(o["dT_reverse_change"], "+.4f")))
+                       _fmt(o["eps_change"], "+.5f")))
         info += render_images(series_path, case_dir, p.period,
                               stats["steady_cycle"])
     else:
@@ -376,7 +378,7 @@ def run_worker(series_path: str, *, do_source_of: bool = True,
             "nCorrectors": p.n_correctors,
             "end_time": p.end_time,
             "steady_tol_dP_Pa": STEADY_TOL["dP_avg_change"],
-            "steady_tol_dT_K": STEADY_TOL["dT_forward_change"],
+            "steady_tol_eps": STEADY_TOL["eps_change"],
             "n_proc": p.n_proc,
         },
         case_stats=case_stats,

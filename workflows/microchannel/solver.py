@@ -115,7 +115,7 @@ def _stop(proc: subprocess.Popen) -> None:
 
 
 def run_case(series_path: str, case_dir: Path, n_proc: int, period: float,
-             on_cycle=None) -> str:
+             span: float, on_cycle=None) -> str:
     """Allrun (serial) or Allrun-parallel: extrudeMesh x3, topoSet,
     createPatch, (decomposePar,) makeFaMesh, buoyantPimpleFoam.
 
@@ -141,7 +141,7 @@ def run_case(series_path: str, case_dir: Path, n_proc: int, period: float,
                 prune_image_data(case_dir, period, t)
             if t is not None and int(t // period) > n_done:
                 n_done = int(t // period)
-                stats = steady_cycle_stats(case_dir, period)
+                stats = steady_cycle_stats(case_dir, period, span)
                 if on_cycle is not None and stats["steady_cycle"] is not None:
                     on_cycle(stats)
                 if is_steady(stats):
