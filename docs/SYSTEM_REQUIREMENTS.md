@@ -10,7 +10,7 @@ read this only if you want to run a workflow outside the portal.
 | Platform | Status | Notes |
 |---|---|---|
 | **Linux x86_64** | **Primary target** | Tested: openSUSE Tumbleweed, Ubuntu 24.04, Rocky 9. All HPC clusters fall here. |
-| **Windows 11 + blueCFD-Core** | Demo / test target | Workflow Python runs natively; OpenFOAM is sourced from blueCFD-Core's bundled `etc/bashrc`. Slower; not for production sweeps. |
+| **Windows 11** | Dry builds only | `tools/run_workflow.py --dry-build` builds the cases. Running OpenFOAM from the workers is not supported and untested. |
 | **macOS** | Untested | OpenFOAM via Docker is the only realistic path. Not on our roadmap. |
 
 ## OS-level dependencies
@@ -124,16 +124,22 @@ stack.
 ## OpenFOAM
 
 The worker sources an OpenFOAM `etc/bashrc` lazily, at solver-spawn time.
-Resolution order (see `workflows/A2_brand_topology/py_OF_utils.py`):
+Resolution order (the same block in every workflow's `py_OF_utils.py`):
 
 1. `STREAMLIT_OPENFOAM_BASHRC` env var (absolute path; admin override).
-2. ESI install chain: `/opt/OpenFOAM/OpenFOAM-{v2512,v2506,v2406,v2312}/etc/bashrc`.
-3. Foundation packaging: `/usr/lib/openfoam/openfoam{2512,12,11,10,9}/etc/bashrc`.
-4. blueCFD-Core (Windows only): `C:/Program Files/blueCFD-Core-*/OpenFOAM-*/etc/bashrc`.
+2. ESI source builds: `/opt/OpenFOAM/OpenFOAM-<v>/etc/bashrc`.
+3. ESI packages -- the openfoam.com apt repo on Ubuntu/Debian and the
+   science repo on openSUSE both install here:
+   `/usr/lib/openfoam/openfoam<v>/etc/bashrc`.
 
-**Tested versions:** ESI v2512 (primary) and v2506. Foundation builds and
-older ESI versions are best-effort -- dictionary syntax of the case
-template is v2406+ compatible. If your cluster module-system needs a
+`<v>` runs through the workflow's `_OF_ESI_VERSIONS`: the version it is
+validated on first (v2512 for the CFDPredict workflows), then newer, then
+older releases.
+
+**Tested versions:** ESI v2512 (primary) and v2506. Older ESI versions are
+best-effort -- dictionary syntax of the case template is v2406+ compatible.
+OpenFOAM Foundation releases are not searched, because the case templates
+use ESI syntax. To try one anyway, or if your cluster module-system needs a
 custom path, set `STREAMLIT_OPENFOAM_BASHRC` in your job script.
 
 ### MPI

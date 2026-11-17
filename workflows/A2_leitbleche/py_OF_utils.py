@@ -22,9 +22,10 @@ verbose = True
 # being used as the solver's nProcs default. Avoids accidentally swamping
 # huge servers; for explicit higher counts set STREAMLIT_NPROCS=<N> in the
 # environment (systemd EnvironmentFile or shell). Cap matches the
-# a production HPC server user-policy upper bound (max 128 phys cores per process).
+# our production HPC server's user-policy upper bound (max 128 phys cores
+# per process).
 #
-# OpenMPI 5.x on a production HPC server handles parallel mpirun runs cleanly --
+# OpenMPI 5.x on that server handles parallel mpirun runs cleanly --
 # two jobs each with -np 128 oversubscribe via OS scheduling, they don't
 # silently kill each other. (The "two jobs both crash" symptom that
 # originally drove a cap=64 attempt turned out to be a German decimal
@@ -134,21 +135,29 @@ def run_OF_utility(case_path, utility_name, params=[]):
         stdout=open("%s/logs/%s.log" %(case_path, utility_name), "w"))
 
 # ----------------------------------------------------------------------
-# OpenFOAM bashrc resolution (generic, used from py_A2_brand_topology)
+# OpenFOAM bashrc resolution (generic; the same block lives in every
+# workflow's copy of this file, only _OF_ESI_VERSIONS is per workflow)
 # ----------------------------------------------------------------------
 # Resolution priority:
 #   1. STREAMLIT_OPENFOAM_BASHRC env var (admin override, absolute path).
-#   2. Linux ESI install chain: /opt/OpenFOAM/OpenFOAM-<v>/etc/bashrc
-#      (v2512 -> v2506 -> v2406 -> v2312).
-#   3. Foundation packaging chain: /usr/lib/openfoam/openfoam<v>/etc/bashrc.
-#   4. blueCFD-Core (Windows): C:/Program Files/blueCFD-Core-*/OpenFOAM-*/etc/bashrc.
+#   2. ESI source builds: /opt/OpenFOAM/OpenFOAM-<v>/etc/bashrc.
+#   3. ESI packages (openfoam.com apt repo, openSUSE science repo -- both
+#      install to the same place): /usr/lib/openfoam/openfoam<v>/etc/bashrc.
+#
+# <v> runs through _OF_ESI_VERSIONS: the version this workflow is validated
+# on first, then newer, then older releases. OpenFOAM Foundation releases
+# are not searched -- the case templates use ESI syntax. To run on one
+# anyway, point STREAMLIT_OPENFOAM_BASHRC at its bashrc.
+#
+# Windows is not searched: source_OF() imports the environment of a bash
+# shell, which comes back MSYS-style (/c/... paths, ':' as separator) and
+# is unusable for Windows Python -- checked with blueCFD-Core-2024, v2512.
+# Dry builds still work there, they skip the sourcing.
 #
 # Raises RuntimeError if nothing found. Caller should let that propagate so
 # the worker writes 9_error.txt with a clear message.
 
-_OF_ESI_VERSIONS = ["v2512", "v2506", "v2406", "v2312"]
-_OF_FOUNDATION_VERSIONS = ["openfoam2512", "openfoam2506", "openfoam12",
-                           "openfoam11", "openfoam10", "openfoam9"]
+_OF_ESI_VERSIONS = ["v2512", "v2606", "v2506", "v2406", "v2312"]
 
 
 def _candidate_bashrcs():
@@ -159,31 +168,14 @@ def _candidate_bashrcs():
     env = (os.environ.get("STREAMLIT_OPENFOAM_BASHRC", "") or "").strip()
     if env:
         cands.append(("STREAMLIT_OPENFOAM_BASHRC env", env))
-    # 2. ESI install chain (Linux)
+    # 2. ESI source builds (Linux)
     for v in _OF_ESI_VERSIONS:
         cands.append(("ESI %s" % v,
                       "/opt/OpenFOAM/OpenFOAM-%s/etc/bashrc" % v))
-    # 3. Foundation packaging (Linux)
-    for name in _OF_FOUNDATION_VERSIONS:
-        cands.append(("Foundation %s" % name,
-                      "/usr/lib/openfoam/%s/etc/bashrc" % name))
-    # 4. blueCFD-Core (Windows). We can't enumerate filesystems portably,
-    # but the conventional install path is one of these:
-    if os.name == "nt":
-        for root in (os.environ.get("ProgramFiles", "C:/Program Files"),
-                     "C:/Program Files (x86)"):
-            try:
-                for d in os.listdir(root):
-                    if d.startswith("blueCFD-Core"):
-                        bcfd_root = os.path.join(root, d)
-                        for of_dir in os.listdir(bcfd_root):
-                            if of_dir.startswith("OpenFOAM-"):
-                                cands.append(
-                                    ("blueCFD %s/%s" % (d, of_dir),
-                                     os.path.join(bcfd_root, of_dir,
-                                                  "etc", "bashrc")))
-            except OSError:
-                continue
+    # 3. ESI packages (Linux)
+    for v in _OF_ESI_VERSIONS:
+        cands.append(("ESI package openfoam%s" % v[1:],
+                      "/usr/lib/openfoam/openfoam%s/etc/bashrc" % v[1:]))
     return cands
 
 
@@ -197,7 +189,8 @@ def resolve_openfoam_bashrc():
         "No OpenFOAM bashrc found. Tried (in order):\n"
         + "\n".join("  - [%s] %s" % (l, p) for l, p in cands)
         + "\nFix: set STREAMLIT_OPENFOAM_BASHRC=/abs/path/to/etc/bashrc, "
-          "or install OpenFOAM ESI v2512 / Foundation 12 / blueCFD-Core."
+          "or install OpenFOAM ESI %s (source build or openfoam.com package)."
+          % _OF_ESI_VERSIONS[0]
     )
 
 
@@ -317,7 +310,7 @@ def run_solver(case_path, solver_name, log_file="logs/solver.log", n_proc=16, st
         logfile_observer.py with the +x bit unset on many installs, but
         we invoke it via `python3 <path>` anyway so executability is
         irrelevant. The original is_exe check was the primary reason
-        the live residuals chart never appeared on a production HPC server --
+        the live residuals chart never appeared on our production server --
         /opt/rungui/logfile_observer.py is mode 644.
         """
         def is_readable(fpath):
@@ -334,9 +327,9 @@ def run_solver(case_path, solver_name, log_file="logs/solver.log", n_proc=16, st
             if is_readable(cand):
                 return cand
         # 2) RUNGUI_PATH env-var (admin override) then well-known dirs.
-        # /opt/rungui-portal is the a production HPC server stable symlink (points
+        # /opt/rungui-portal is the production server's stable symlink (points
         # at the rungui snapshot the portal-service is allowed to read);
-        # /opt/rungui is the legacy ubuntu-streamlit / pre-migration
+        # /opt/rungui is the legacy, pre-migration
         # path. The env-var takes priority for non-standard installs.
         rungui_candidates = [os.environ.get("RUNGUI_PATH", ""),
                              "/opt/rungui-portal",
@@ -430,7 +423,7 @@ def run_solver(case_path, solver_name, log_file="logs/solver.log", n_proc=16, st
     if rc != 0:
         print("WARNING: mpirun -np %s %s -parallel returned exit code %d "
               "for case %s. Check %s and the system load -- typical cause "
-              "on a production HPC server is two concurrent jobs each demanding 128 "
+              "on a shared production server is two concurrent jobs each demanding 128 "
               "ranks (solver.log stops mid-init). Solver may have produced "
               "no time directories; downstream post-processing will likely "
               "report 'Converged in 0 iterations'."
