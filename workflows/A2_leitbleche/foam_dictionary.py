@@ -5,10 +5,18 @@ Created on Oct 13, 2012
 '''
 from __future__ import print_function
 from __future__ import absolute_import
-try:      # package form (see __init__.py); flat script dir falls back below
-    from . import utils
-except ImportError:
-    import utils
+
+
+def _win_to_unix_path(path):
+    r"""Return a Windows path ("C:\\work\\t.txt") in the forward-slash form the
+    OpenFOAM dictionaries expect ("C:/work/t.txt"); anything else unchanged."""
+    if not isinstance(path, str):
+        return path
+    if "\\" in path or ":" in path:
+        path = path.replace(":\\\\", ":/").replace(":\\", ":/")
+        path = path.replace("\\", "/")
+    return path
+
 
 def switch_name_and_position(the_dict):
     '''
@@ -132,7 +140,7 @@ def get_data_to_write(the_dict):
             line += " );"
             data_to_write.append(line)
         else:
-            entry = utils.win_to_unix_path(the_dict[k][1])            
+            entry = _win_to_unix_path(the_dict[k][1])            
             data_to_write.append("%s %s;" % (the_dict[k][0], entry))
     return data_to_write
 
@@ -149,7 +157,7 @@ def get_options_string(options_dict):
         else:
             entry = options_dict[the_option][1]
             if entry != "":
-                entry = utils.win_to_unix_path(entry)
+                entry = _win_to_unix_path(entry)
                 return " -" + the_option + " " + entry 
         return ""
     option_string = ""
@@ -212,23 +220,7 @@ def get_arguments_string(arguments_dict):
     
     for each_arg in argument_list:
         entry = arguments_dict[each_arg][1]
-        entry = utils.win_to_unix_path(entry)
+        entry = _win_to_unix_path(entry)
         argument_string += " " + entry
     return argument_string
 
-if __name__ == '__main__':
-    from modules import foam_extrudeMesh
-    the_dict = foam_extrudeMesh.dictionary_dict
-    #print_dict(the_dict)
-    #the_dict = force_position_version(the_dict)
-    print_complete_dict(the_dict)
-    print() 
-    the_dict = get_position_version(the_dict)
-    print_complete_dict(the_dict)
-    print()
-    the_dict = get_key_version(the_dict)
-    print_complete_dict(the_dict)
-    print() 
-    the_dict = get_position_version(the_dict)
-    print_complete_dict(the_dict)
-    print()
